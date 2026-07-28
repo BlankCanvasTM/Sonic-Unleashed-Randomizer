@@ -44,7 +44,7 @@ STAGE_ENTRIES = [
     {
         "name": "Apotos N Act 2",
         "file": Path("#Application/SR_EnterMykonosNightActionSub01.seq.xml"),
-        "default_archive": "ActN_MykonosEvil",
+        "default_archive": "ActN_SubMykonos_01",
         "default_is_evil": "true"
     },
     {
@@ -948,105 +948,121 @@ def get_stage_display_name(archive: str) -> str:
     """Return a readable stage name, retaining the archive as a fallback."""
     return ARCHIVE_DISPLAY_NAMES.get(archive, archive)
 
+CAMPAIGN_STAGE_ARCHIVES = (
+    # Windmill Isle
+    "ActD_MykonosAct1",       # Day Act 1 / tutorial
+    "ActD_MykonosAct2",       # Day Act 2
+    "ActD_SubMykonos_01",     # Day Act 3 / side act
+    "ActN_MykonosEvil",       # Night Act 1
+
+    # Rooftop Run
+    "ActD_EU",                # Day Act 1
+    "ActD_SubEU_01",          # Day Act 2
+    "ActD_SubEU_02",          # Day Act 3 / fixed in original location
+    "ActN_EUEvil",            # Night Act 1
+
+    # Savannah Citadel
+    "ActD_Africa",            # Day Act 1
+    "ActD_SubAfrica_01",      # Day Act 2 / side act
+    "ActD_SubAfrica_03",      # Day Act 3 / side act
+    "ActN_AfricaEvil",        # Night Act 1
+    "ActN_SubAfrica_01",      # Night Act 2 / side act
+
+    # Dragon Road
+    "ActD_China",             # Day Act 1
+    "ActD_SubChina_03",       # Day Act 2 / side act
+    "ActD_SubChina_04",       # Day Act 3 / side act
+    "ActN_ChinaEvil",         # Night Act 1
+    "ActN_SubChina_01",       # Night Act 2 / side act
+
+    # Cool Edge
+    "ActD_Snow",              # Day Act 1
+    "ActD_SubSnow_01",        # Day Act 2 / side act
+    "ActN_SnowEvil",          # Night Act 1
+
+    # Jungle Joyride
+    "ActD_Beach",             # Day Act 1
+    "ActD_SubBeach_02",       # Day Act 2 / side act
+    "ActD_SubBeach_04",       # Day Act 3 / side act
+    "ActN_BeachEvil",         # Night Act 1
+    "ActN_SubBeach_01",       # Night Act 2 / side act
+
+    # Arid Sands
+    "ActD_Petra",             # Day Act 1
+    "ActD_SubPetra_03",       # Day Act 2 / side act
+    "ActN_PetraEvil",         # Night Act 1
+
+    # Skyscraper Scamper
+    "ActD_NY",                # Day Act 1
+    "ActD_SubNY_01",          # Day Act 2 / side act
+)
+
+FIXED_STAGE_ARCHIVES = {
+    "ActD_SubEU_02",  # Rooftop Run Day Act 3 soft-locks outside its own slot.
+}
+
+CAMPAIGN_STAGE_SET = set(CAMPAIGN_STAGE_ARCHIVES)
+
+EXCLUDED_STAGE_ARCHIVES = {
+    entry["default_archive"]
+    for entry in STAGE_ENTRIES
+    if "Boss Battle" not in entry["name"]
+    and entry["default_archive"] not in CAMPAIGN_STAGE_SET
+}
+
+RANDOMISABLE_STAGE_ARCHIVES = tuple(
+    archive
+    for archive in CAMPAIGN_STAGE_ARCHIVES
+    if archive not in FIXED_STAGE_ARCHIVES
+)
+
+def make_stage_pool_entry(archive: str) -> dict:
+    """Build a pool entry from its original stage definition."""
+    for entry in STAGE_ENTRIES:
+        if entry["default_archive"] == archive:
+            return {
+                "archive": archive,
+                "is_evil": entry["default_is_evil"],
+            }
+    raise ValueError(f"No stage entry exists for archive '{archive}'.")
+
+STAGE_POOL = [
+    make_stage_pool_entry(archive)
+    for archive in RANDOMISABLE_STAGE_ARCHIVES
+]
+
+NO_UPGRADE_ARCHIVES = (
+    "ActD_MykonosAct1",
+    "ActD_MykonosAct2",
+    "ActD_SubMykonos_01",
+    "ActN_MykonosEvil",
+    "ActN_SubMykonos_01",
+    "ActD_SubNY_01",
+    "ActD_SubPetra_03",
+    "ActN_PetraEvil",
+    "ActD_SubSnow_01",
+    "ActN_SnowEvil",
+    "ActD_Africa",
+    "ActD_SubAfrica_01",
+    "ActN_AfricaEvil",
+    "ActN_SubAfrica_01",
+    "ActN_BeachEvil",
+    "ActN_SubBeach_01",
+    "ActD_China",
+    "ActN_ChinaEvil",
+    "ActN_SubChina_01",
+    "ActN_EUEvil",
+)
+
 NO_UPGRADE_POOL = [
-    {"archive": "ActD_MykonosAct1", "is_evil": "false"},
-    {"archive": "ActD_MykonosAct2", "is_evil": "false"},
-    {"archive": "ActD_SubMykonos_01", "is_evil": "false"},
-    {"archive": "ActD_SubMykonos_02", "is_evil": "false"},
-    {"archive": "ActN_MykonosEvil", "is_evil": "true"},
-    {"archive": "ActN_SubMykonos_01", "is_evil": "true"},
-    {"archive": "ActD_SubNY_01", "is_evil": "false"},
-    {"archive": "ActD_SubNY_02", "is_evil": "false"},
-    {"archive": "ActN_NYEvil", "is_evil": "true"},
-    {"archive": "ActN_SubNY_01", "is_evil": "true"},
-    #{"archive": "ActD_SubPetra_02", "is_evil": "false"}, Chao collection mission does not complete when loaded through randomised entry.
-    {"archive": "ActD_SubPetra_03", "is_evil": "false"},
-    {"archive": "ActN_PetraEvil", "is_evil": "true"},
-    {"archive": "ActN_SubPetra_02", "is_evil": "true"},
-    {"archive": "ActD_SubSnow_01", "is_evil": "false"},
-    {"archive": "ActD_SubSnow_02", "is_evil": "false"},
-    {"archive": "ActN_SnowEvil", "is_evil": "true"},
-    {"archive": "ActN_SubSnow_01", "is_evil": "true"},
-    {"archive": "ActN_SubSnow_02", "is_evil": "true"},
-    {"archive": "ActD_Africa", "is_evil": "false"},
-    {"archive": "ActD_SubAfrica_01", "is_evil": "false"},
-    {"archive": "ActN_AfricaEvil", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_01", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_02", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_03", "is_evil": "true"},
-    {"archive": "ActD_SubBeach_01", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_03", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_04", "is_evil": "false"},
-    {"archive": "ActN_BeachEvil", "is_evil": "true"},
-    {"archive": "ActN_SubBeach_01", "is_evil": "true"},
-    {"archive": "ActD_China", "is_evil": "false"},
-    {"archive": "ActD_SubChina_02", "is_evil": "false"},
-    {"archive": "ActN_ChinaEvil", "is_evil": "true"},
-    {"archive": "ActN_SubChina_01", "is_evil": "true"},
-    {"archive": "ActN_SubChina_02", "is_evil": "true"},
-    {"archive": "ActD_SubEU_03", "is_evil": "false"},
-    {"archive": "ActN_EUEvil", "is_evil": "true"},
-    {"archive": "ActN_SubEU_01", "is_evil": "true"},
+    make_stage_pool_entry(archive)
+    for archive in NO_UPGRADE_ARCHIVES
+    if archive in RANDOMISABLE_STAGE_ARCHIVES
 ]
 
 
-pool = [
-    {"archive": "ActD_MykonosAct1", "is_evil": "false"},
-    {"archive": "ActD_MykonosAct2", "is_evil": "false"},
-    {"archive": "ActD_SubMykonos_01", "is_evil": "false"},
-    {"archive": "ActD_SubMykonos_02", "is_evil": "false"},
-    {"archive": "ActN_MykonosEvil", "is_evil": "true"},
-    {"archive": "ActN_SubMykonos_01", "is_evil": "true"},
-    {"archive": "ActD_NY", "is_evil": "false"},
-    {"archive": "ActD_SubNY_01", "is_evil": "false"},
-    {"archive": "ActD_SubNY_02", "is_evil": "false"},
-    {"archive": "ActN_NYEvil", "is_evil": "true"},
-    {"archive": "ActN_SubNY_01", "is_evil": "true"},
-    {"archive": "ActD_Petra", "is_evil": "false"},
-    #{"archive": "ActD_SubPetra_02", "is_evil": "false"}, Chao collection mission does not complete when loaded through randomised entry.
-    {"archive": "ActD_SubPetra_03", "is_evil": "false"},
-    {"archive": "ActN_PetraEvil", "is_evil": "true"},
-    {"archive": "ActN_SubPetra_02", "is_evil": "true"},
-    {"archive": "ActD_Snow", "is_evil": "false"},
-    {"archive": "ActD_SubSnow_01", "is_evil": "false"},
-    {"archive": "ActD_SubSnow_02", "is_evil": "false"},
-    {"archive": "ActD_SubSnow_03", "is_evil": "false"},
-    {"archive": "ActN_SnowEvil", "is_evil": "true"},
-    {"archive": "ActN_SubSnow_01", "is_evil": "true"},
-    {"archive": "ActN_SubSnow_02", "is_evil": "true"},
-    {"archive": "ActD_Africa", "is_evil": "false"},
-    {"archive": "ActD_SubAfrica_01", "is_evil": "false"},
-    {"archive": "ActD_SubAfrica_02", "is_evil": "false"},
-    {"archive": "ActD_SubAfrica_03", "is_evil": "false"},
-    {"archive": "ActN_AfricaEvil", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_01", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_02", "is_evil": "true"},
-    {"archive": "ActN_SubAfrica_03", "is_evil": "true"},
-    {"archive": "ActD_Beach", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_01", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_02", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_03", "is_evil": "false"},
-    {"archive": "ActD_SubBeach_04", "is_evil": "false"},
-    {"archive": "ActN_BeachEvil", "is_evil": "true"},
-    {"archive": "ActN_SubBeach_01", "is_evil": "true"},
-    {"archive": "ActD_China", "is_evil": "false"},
-    {"archive": "ActD_SubChina_01", "is_evil": "false"},
-    {"archive": "ActD_SubChina_02", "is_evil": "false"},
-    {"archive": "ActD_SubChina_03", "is_evil": "false"},
-    {"archive": "ActD_SubChina_04", "is_evil": "false"},
-    {"archive": "ActN_ChinaEvil", "is_evil": "true"},
-    {"archive": "ActN_SubChina_01", "is_evil": "true"},
-    {"archive": "ActN_SubChina_02", "is_evil": "true"},
-    {"archive": "ActD_EU", "is_evil": "false"},
-    {"archive": "ActD_SubEU_01", "is_evil": "false"},
-    {"archive": "ActD_SubEU_03", "is_evil": "false"},
-    {"archive": "ActD_SubEU_04", "is_evil": "false"},
-    {"archive": "ActN_EUEvil", "is_evil": "true"},
-    {"archive": "ActN_SubEU_01", "is_evil": "true"}
 
-]
-
-bossPool = [
+BOSS_POOL = [
     #{"archive": "BossPetra", "is_evil": "true"},
     {"archive": "BossEggRayBird", "is_evil": "false"},
     #{"archive": "BossPhoenix", "is_evil": "true"},
@@ -1060,12 +1076,6 @@ DEFAULT_LOCKED_BOSSES = [
     "BossPhoenix",
     "BossDarkGaiaMoray",
 ]
-
-# Stages in this set remain in their original world-map locations and are not
-# included in the random stage pool or seed code.
-FIXED_STAGE_ARCHIVES = {
-    "ActD_SubEU_02",  # Spagonia Day Act 3 soft-locks Chao collection mission does not complete when loaded through randomised entry.
-}
 
 
 generated_seed_ids = []
@@ -1276,8 +1286,8 @@ def reset_all_files() -> None:
 
 def write_metadata_file(seed_code: str) -> None:
     metadata = {
-        "randomiser_name": "Sonic Unleashed Randomiser",
-        "version": "1.2.0",
+        "randomiser_name": "Sonic Unleashed Randomizer",
+        "version": "1.3.0",
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "seed": seed_code,
         "settings": {
@@ -1285,7 +1295,10 @@ def write_metadata_file(seed_code: str) -> None:
             "shuffle_bosses": True,
             "allow_day_night_swaps": True,
             "first_stage_uses_no_upgrade_pool": True,
+            "campaign_stage_count": len(CAMPAIGN_STAGE_ARCHIVES),
+            "randomised_stage_count": len(RANDOMISABLE_STAGE_ARCHIVES),
             "fixed_stages": sorted(FIXED_STAGE_ARCHIVES),
+            "excluded_stages": sorted(EXCLUDED_STAGE_ARCHIVES),
         }
     }
 
@@ -1321,11 +1334,10 @@ def main() -> None:
         try:
             decoded = decode_seed(seed_input)
 
-            expected_seed_length = len([
-                entry for entry in STAGE_ENTRIES
-                if entry["default_archive"] not in DEFAULT_LOCKED_BOSSES
-                and entry["default_archive"] not in FIXED_STAGE_ARCHIVES
-            ])
+            expected_seed_length = (
+                len(RANDOMISABLE_STAGE_ARCHIVES)
+                + len(BOSS_POOL)
+            )
 
             if len(decoded) != expected_seed_length:
                 print(
@@ -1348,8 +1360,8 @@ def main() -> None:
     reset_all_files()
 
     available_no_upgrade_pool = NO_UPGRADE_POOL.copy()
-    available_pool = pool.copy()
-    available_boss_pool = bossPool.copy()
+    available_pool = STAGE_POOL.copy()
+    available_boss_pool = BOSS_POOL.copy()
 
     log_lines = []
     log_lines.append("SONIC UNLEASHED RANDOMISER - SEED SPOILER LOG")
@@ -1363,30 +1375,13 @@ def main() -> None:
     log_lines.append("")
     log_lines.append("STAGE LOCATIONS")
     log_lines.append("-" * 54)
-    print(len(pool))
-    print(len([e for e in STAGE_ENTRIES if "Boss Battle" not in e["name"]]))
-
-    stage_entry_archives = [
-    e["default_archive"]
-    for e in STAGE_ENTRIES
-    if "Boss Battle" not in e["name"]
-]
-
-    pool_archives = [s["archive"] for s in pool]
-
-    print("Normal entries:", len(stage_entry_archives))
-    print("Pool:", len(pool_archives))
-
-    print("Missing from pool:")
-    for archive in stage_entry_archives:
-        if archive not in pool_archives:
-            print(archive)
-
-    print("Extra in pool:")
-    for archive in pool_archives:
-        if archive not in stage_entry_archives:
-            print(archive)
-
+    print(
+        f"Campaign stages: {len(CAMPAIGN_STAGE_ARCHIVES)} "
+        f"({len(RANDOMISABLE_STAGE_ARCHIVES)} shuffled, "
+        f"{len(FIXED_STAGE_ARCHIVES)} fixed)"
+    )
+    print(f"Excluded DLC/Chao stages: {len(EXCLUDED_STAGE_ARCHIVES)}")
+    print(f"Randomised bosses: {len(BOSS_POOL)}")
     print()
     print("=== RANDOMISING STAGES ===")
     print()
@@ -1407,7 +1402,7 @@ def main() -> None:
         }
                 
 
-        elif entry["default_archive"] in FIXED_STAGE_ARCHIVES:
+        elif entry["default_archive"] in FIXED_STAGE_ARCHIVES | EXCLUDED_STAGE_ARCHIVES:
             chosen = {
                 "archive": entry["default_archive"],
                 "is_evil": entry["default_is_evil"],
@@ -1429,8 +1424,14 @@ def main() -> None:
         disable_first_play(entry["file"])
 
         destination_name = get_stage_display_name(chosen["archive"])
-        if entry["default_archive"] in FIXED_STAGE_ARCHIVES:
+        original_archive = entry["default_archive"]
+
+        if original_archive in EXCLUDED_STAGE_ARCHIVES:
+            result_line = f'{entry["name"]:<28} -> {destination_name} (DLC)'
+
+        elif original_archive in FIXED_STAGE_ARCHIVES:
             result_line = f'{entry["name"]:<28} -> {destination_name} (Default)'
+
         else:
             result_line = f'{entry["name"]:<28} -> {destination_name}'
 
