@@ -14,7 +14,8 @@ SEED_CODE = None
 LEVEL_STATE = LevelState()
 LEVELS = LEVEL_STATE.levels
 
-print(f"Loaded {len(LEVELS)} levels")
+print(LEVELS[0].file)
+print(type(LEVELS[0].file))
 
 
 STAGE_ENTRIES = [
