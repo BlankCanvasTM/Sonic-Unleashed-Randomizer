@@ -25,6 +25,7 @@ build/
 /\#Application.arl
 
 /\#Application/
+/Stages/
 
 /randomiser_log.txt
 /randomiser_metadata.json

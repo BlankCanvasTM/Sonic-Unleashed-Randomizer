@@ -7,7 +7,13 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-from data import LevelState, Stage, Shoe
+from data import Level, LevelState, Stage, Shoe
+
+from shutil import copyfile
+
+STAGES_COPY_DIR = Path("Stages")
+HEDGE_ARC_PACK = Path("HedgeArcPack.exe")
+APPLICATION_FOLDER = Path("#Application")
 
 SEED_CODE = None
 
@@ -32,6 +38,18 @@ APOTOS_DAY_1_POOL = [
     and not level.req_shoe
 ]
 
+def pick_level(level_pool: list[Level]) -> Level:
+    if not level_pool:
+        raise ValueError("No eligible levels remain in the pool.")
+
+    chosen = random.choice(level_pool)
+    level_pool.remove(chosen)
+
+    return chosen
+
+def get_snapshot_file(level: Level) -> Path:
+    return STAGES_COPY_DIR / level.file.name
+
 print()
 print("=== APOTOS DAY 1 ELIGIBLE STAGES ===")
 
@@ -43,6 +61,73 @@ for level in APOTOS_DAY_1_POOL:
     )
 
 print(f"Total: {len(APOTOS_DAY_1_POOL)}")
+
+available_apotos_pool = APOTOS_DAY_1_POOL.copy()
+chosen_level = pick_level(available_apotos_pool)
+
+source_file = get_snapshot_file(chosen_level)
+destination_file = LEVEL_STATE.WID1.file
+
+print()
+print("=== APOTOS FILE COPY TEST ===")
+print(f"Chosen level: {chosen_level.name}")
+print(f"Source: {source_file}")
+print(f"Destination: {destination_file}")
+
+if not source_file.exists():
+    raise FileNotFoundError(
+        f"Snapshot file does not exist: {source_file}"
+    )
+
+if not destination_file.exists():
+    raise FileNotFoundError(
+        f"Destination file does not exist: {destination_file}"
+    )
+
+copyfile(source_file, destination_file)
+
+print("Copy completed successfully.")
+
+def repack_application() -> None:
+    if not HEDGE_ARC_PACK.exists():
+        raise FileNotFoundError(
+            f"HedgeArcPack executable was not found: {HEDGE_ARC_PACK}"
+        )
+
+    if not APPLICATION_FOLDER.exists():
+        raise FileNotFoundError(
+            f"Application folder was not found: {APPLICATION_FOLDER}"
+        )
+
+    print()
+    print("=== REPACKING #APPLICATION ===")
+
+    result = subprocess.run(
+        [
+            str(HEDGE_ARC_PACK),
+            str(APPLICATION_FOLDER),
+            "-P",
+            "-T=hh",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.stdout:
+        print(result.stdout)
+
+    if result.stderr:
+        print(result.stderr)
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"HedgeArcPack failed with exit code {result.returncode}."
+        )
+
+    print("#Application repacked successfully.")
+
+
+repack_application()
 
 
 STAGE_ENTRIES = [
@@ -1230,6 +1315,7 @@ def find_stage_by_archive(stage_pool: list[dict], archive: str) -> dict:
 
     raise ValueError(f"Archive '{archive}' was not found in this pool.")
 
+
 def pick_stage(stage_pool: list[dict]) -> dict:
     global seed_replay_index
 
@@ -1378,34 +1464,6 @@ def apply_stage_data(text: str, stage: dict) -> str:
     text = text[:match.start()] + default_block + text[match.end():]
 
     return text
-
-
-def disable_first_play(xml_path: Path) -> None:
-    text = xml_path.read_text(encoding="utf-8")
-
-    first_play_pattern = re.compile(
-        r"""
-        <If\s+flag="[^"]+"\s+operation="E"\s+value="true">\s*
-            <OverWriteSetData>\s*
-                <Name>FirstPlay</Name>\s*
-                <FileName>dummy\.set\.xml</FileName>\s*
-            </OverWriteSetData>\s*
-        </If>
-        """,
-        re.VERBOSE,
-    )
-
-    replacement = """<OverWriteSetData>
-        <Name>FirstPlay</Name>
-        <FileName>dummy.set.xml</FileName>
-      </OverWriteSetData>"""
-
-    new_text, count = first_play_pattern.subn(replacement, text, count=1)
-
-    if count > 0:
-        xml_path.write_text(new_text, encoding="utf-8")
-        print(f"Disabled FirstPlay in {xml_path}")
-
 
 
 def reset_all_files() -> None:
@@ -1562,7 +1620,6 @@ def main() -> None:
             chosen = pick_stage(available_pool)
 
         set_stage_data(entry["file"], chosen)
-        disable_first_play(entry["file"])
 
         destination_name = get_stage_display_name(chosen["archive"])
         original_archive = entry["default_archive"]
@@ -1613,6 +1670,6 @@ def main() -> None:
     except FileNotFoundError:
         print("HedgeArcPack.exe not found.")
 
-
+'''
 if __name__ == "__main__":
-    main()
+    main()'''
