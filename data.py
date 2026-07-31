@@ -1,6 +1,7 @@
 from enum import Enum
 import typing
 from collections.abc import Sequence
+from pathlib import Path
 
 class Stage(Enum):
 	DAY_TUT = 0
@@ -32,7 +33,7 @@ class Level:
 		if self.parent:
 			self.parent.children.append(self)
 		
-		self.file = f"SR_Enter{file}.seq.xml"
+		self.file = Path("#Application") / f"SR_Enter{file}.seq.xml"
 		self.required_medal = level # Sun/Moon can be obtained via the expression "type & 1" (0 for sun/day, 1 for moon/night)
 		self.recv_shoe = recv_shoe # What shoe we get BEFORE entering the entrance
 		self.req_shoe = req_shoe # What shoes are required to beat the stage
