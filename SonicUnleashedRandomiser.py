@@ -7,15 +7,42 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-from data import LevelState
+from data import LevelState, Stage, Shoe
 
 SEED_CODE = None
 
 LEVEL_STATE = LevelState()
 LEVELS = LEVEL_STATE.levels
 
-print(LEVELS[0].file)
-print(type(LEVELS[0].file))
+APOTOS_COMPATIBLE_TYPES = {
+    Stage.DAY_TUT,
+    Stage.DAY_MAIN,
+    Stage.NIGHT_MAIN,
+    Stage.DAY_SIDE,
+    Stage.NIGHT_SIDE,
+    Stage.DAY_BOSS,
+    Stage.NIGHT_BOSS,
+}
+
+APOTOS_DAY_1_POOL = [
+    level
+    for level in LEVELS
+    if level.type in APOTOS_COMPATIBLE_TYPES
+    and level.recv_shoe == Shoe.NONE
+    and not level.req_shoe
+]
+
+print()
+print("=== APOTOS DAY 1 ELIGIBLE STAGES ===")
+
+for level in APOTOS_DAY_1_POOL:
+    print(
+        f"{level.name} | "
+        f"Receives: {level.recv_shoe.name} | "
+        f"Requires: {[shoe.name for shoe in level.req_shoe]}"
+    )
+
+print(f"Total: {len(APOTOS_DAY_1_POOL)}")
 
 
 STAGE_ENTRIES = [
@@ -230,6 +257,13 @@ STAGE_ENTRIES = [
         "default_is_evil": "false"
     },
     {
+        "name": "Shamar D Act 3",
+        "file": Path("#Application/SR_EnterPetraDayActionSub01.seq.xml"),
+        "default_archive": "ActD_SubPetra_01",
+        "default_country": "Petra",
+        "default_is_evil": "false"
+    },
+    {
         "name": "Shamar N Act 1",
         "file": Path("#Application/SR_EnterPetraNightAction.seq.xml"),
         "default_archive": "ActN_PetraEvil",
@@ -238,6 +272,13 @@ STAGE_ENTRIES = [
     },
     {
         "name": "Shamar N Act 2",
+        "file": Path("#Application/SR_EnterPetraNightActionSub01.seq.xml"),
+        "default_archive": "ActN_SubPetra_01",
+        "default_country": "Petra",
+        "default_is_evil": "true"
+    },
+    {
+        "name": "Shamar N Act 3",
         "file": Path("#Application/SR_EnterPetraNightActionSub02.seq.xml"),
         "default_archive": "ActN_SubPetra_02",
         "default_country": "Petra",
@@ -427,6 +468,7 @@ STAGE_ENTRIES = [
     },
     
 ]
+
 
 STAGE_DATA = {"ActD_MykonosAct1": {
         "loading_resource_id": "MD",
@@ -651,6 +693,13 @@ STAGE_DATA = {"ActD_MykonosAct1": {
         "base_time": 3600,
         "checkpoint_num": None,
         "time_bonus_efficient": 60
+    },
+    "ActN_SubPetra_01": {
+            "loading_resource_id": "PN",
+            "rank_table": {"S": 150000, "A": 100000, "B": 75000, "C": 50000, "D": 25000, "E": 0},
+            "base_time": 500,
+            "checkpoint_num": None,
+            "time_bonus_efficient": None
     },
     "ActN_SubPetra_02": {
         "loading_resource_id": "PN",
@@ -934,6 +983,8 @@ ARCHIVE_TO_ID = {
     "BossEggLancer": 55,
     "BossDarkGaiaMoray": 56,
     "BossPetra": 57,
+    "ActD_SubPetra_01": 58,
+    "ActN_SubPetra_01": 59,
 }
 
 ID_TO_ARCHIVE = {
@@ -1056,7 +1107,10 @@ CAMPAIGN_STAGE_ARCHIVES = (
     # Arid Sands
     "ActD_Petra",             # Day Act 1
     "ActD_SubPetra_03",       # Day Act 2 / side act
+    "ActD_SubPetra_01",        # Day Act 3
     "ActN_PetraEvil",         # Night Act 1
+    "ActN_SubPetra_01",        # Night Act 2
+    "ActN_SubPetra_02",        # Night Act 3
 
     # Skyscraper Scamper
     "ActD_NY",                # Day Act 1
@@ -1099,7 +1153,7 @@ STAGE_POOL = [
     make_stage_pool_entry(archive)
     for archive in RANDOMISABLE_STAGE_ARCHIVES
 ]
-
+''' 
 NO_UPGRADE_ARCHIVES = (
     "ActD_MykonosAct1",
     "ActD_MykonosAct2",
@@ -1122,12 +1176,15 @@ NO_UPGRADE_ARCHIVES = (
     "ActN_SubChina_01",
     "ActN_EUEvil",
 )
+'''
 
+'''
 NO_UPGRADE_POOL = [
     make_stage_pool_entry(archive)
     for archive in NO_UPGRADE_ARCHIVES
     if archive in RANDOMISABLE_STAGE_ARCHIVES
 ]
+'''
 
 
 
