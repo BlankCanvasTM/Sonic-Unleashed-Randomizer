@@ -7,7 +7,14 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+from data import LevelState
+
 SEED_CODE = None
+
+LEVEL_STATE = LevelState()
+LEVELS = LEVEL_STATE.levels
+
+print(f"Loaded {len(LEVELS)} levels")
 
 
 STAGE_ENTRIES = [
@@ -15,348 +22,406 @@ STAGE_ENTRIES = [
         "name": "Apotos D Act 1",
         "file": Path("#Application/SR_EnterMykonosDayTutorial.seq.xml"),
         "default_archive": "ActD_MykonosAct1",
+        "default_country": "Mykonos",
         "default_is_evil": "false"
     },
     {
         "name": "Apotos D Act 2",
         "file": Path("#Application/SR_EnterMykonosDayAction.seq.xml"),
         "default_archive": "ActD_MykonosAct2",
+        "default_country": "Mykonos",
         "default_is_evil": "false"
     },
     {
         "name": "Apotos D Act 3",
         "file": Path("#Application/SR_EnterMykonosDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubMykonos_01",
+        "default_country": "Mykonos",
         "default_is_evil": "false"
     },
     {
         "name": "Apotos D Act 4",
         "file": Path("#Application/SR_EnterMykonosDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubMykonos_02",
+        "default_country": "Mykonos",
         "default_is_evil": "false"
     },
     {
         "name": "Apotos N Act 1",
         "file": Path("#Application/SR_EnterMykonosNightAction.seq.xml"),
         "default_archive": "ActN_MykonosEvil",
+        "default_country": "Mykonos",
         "default_is_evil": "true"
     },
     {
         "name": "Apotos N Act 2",
         "file": Path("#Application/SR_EnterMykonosNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubMykonos_01",
+        "default_country": "Mykonos",
         "default_is_evil": "true"
     },
     {
         "name": "Spagonia D Act 1",
         "file": Path("#Application/SR_EnterEUDayAction.seq.xml"),
         "default_archive": "ActD_EU",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Spagonia D Act 2",
         "file": Path("#Application/SR_EnterEUDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubEU_01",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Spagonia D Act 3",
         "file": Path("#Application/SR_EnterEUDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubEU_02",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Spagonia D Act 4",
         "file": Path("#Application/SR_EnterEUDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubEU_03",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Spagonia D Act 5",
         "file": Path("#Application/SR_EnterEUDayActionSub04.seq.xml"),
         "default_archive": "ActD_SubEU_04",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Egg Ray Boss Battle",
         "file": Path("#Application/SR_EnterEUDayBoss.seq.xml"),
         "default_archive": "BossEggRayBird",
+        "default_country": "EU",
         "default_is_evil": "false"
     },
     {
         "name": "Spagonia N Act 1",
         "file": Path("#Application/SR_EnterEUNightAction.seq.xml"),
         "default_archive": "ActN_EUEvil",
+        "default_country": "EU",
         "default_is_evil": "true"
     },
     {
         "name": "Spagonia N Act 2",
         "file": Path("#Application/SR_EnterEUNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubEU_01",
+        "default_country": "EU",
         "default_is_evil": "true"
     },
     {
         "name": "Mazuri D Act 1",
         "file": Path("#Application/SR_EnterAfricaDayAction.seq.xml"),
         "default_archive": "ActD_Africa",
+        "default_country": "Africa",
         "default_is_evil": "false"
     },
     {
         "name": "Mazuri D Act 2",
         "file": Path("#Application/SR_EnterAfricaDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubAfrica_01",
+        "default_country": "Africa",
         "default_is_evil": "false"
     },
     {
         "name": "Mazuri D Act 3",
         "file": Path("#Application/SR_EnterAfricaDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubAfrica_03",
+        "default_country": "Africa",
         "default_is_evil": "false"
     },
     {
         "name": "Mazuri D Act 4",
         "file": Path("#Application/SR_EnterAfricaDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubAfrica_02",
+        "default_country": "Africa",
         "default_is_evil": "false"
     },
     {
         "name": "Egg Beetle Boss Battle",
         "file": Path("#Application/SR_EnterAfricaDayBoss.seq.xml"),
         "default_archive": "BossEggBeetle",
+        "default_country": "Africa",
         "default_is_evil": "false"
     },
     {
         "name": "Mazuri N Act 1",
         "file": Path("#Application/SR_EnterAfricaNightAction.seq.xml"),
         "default_archive": "ActN_AfricaEvil",
+        "default_country": "Africa",
         "default_is_evil": "true"
     },
     {
         "name": "Mazuri N Act 2",
         "file": Path("#Application/SR_EnterAfricaNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubAfrica_01",
+        "default_country": "Africa",
         "default_is_evil": "true"
     },
     {
         "name": "Mazuri N Act 3",
         "file": Path("#Application/SR_EnterAfricaNightActionSub02.seq.xml"),
         "default_archive": "ActN_SubAfrica_02",
+        "default_country": "Africa",
         "default_is_evil": "true"
     },
     {
         "name": "Mazuri N Act 4",
         "file": Path("#Application/SR_EnterAfricaNightActionSub03.seq.xml"),
         "default_archive": "ActN_SubAfrica_03",
+        "default_country": "Africa",
         "default_is_evil": "true"
     },
     {
         "name": "Empire State D Act 1",
         "file": Path("#Application/SR_EnterNYDayAction.seq.xml"),
         "default_archive": "ActD_NY",
+        "default_country": "NY",
         "default_is_evil": "false"
     },
     {
         "name": "Empire State D Act 2",
         "file": Path("#Application/SR_EnterNYDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubNY_01",
+        "default_country": "NY",
         "default_is_evil": "false"
     },
     {
         "name": "Empire State D Act 3",
         "file": Path("#Application/SR_EnterNYDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubNY_02",
+        "default_country": "NY",
         "default_is_evil": "false"
     },
     {
         "name": "Empire State N Act 1",
         "file": Path("#Application/SR_EnterNYNightAction.seq.xml"),
         "default_archive": "ActN_NYEvil",
+        "default_country": "NY",
         "default_is_evil": "true"
     },
     {
         "name": "Empire State N Act 2",
         "file": Path("#Application/SR_EnterNYNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubNY_01",
+        "default_country": "NY",
         "default_is_evil": "true"
     },
     {
         "name": "Shamar D Act 1",
         "file": Path("#Application/SR_EnterPetraDayAction.seq.xml"),
         "default_archive": "ActD_Petra",
+        "default_country": "Petra",
         "default_is_evil": "false"
     },
     {
         "name": "Shamar D Act 2",
         "file": Path("#Application/SR_EnterPetraDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubPetra_03",
+        "default_country": "Petra",
         "default_is_evil": "false"
     },
     {
         "name": "Shamar N Act 1",
         "file": Path("#Application/SR_EnterPetraNightAction.seq.xml"),
         "default_archive": "ActN_PetraEvil",
+        "default_country": "Petra",
         "default_is_evil": "true"
     },
     {
         "name": "Shamar N Act 2",
         "file": Path("#Application/SR_EnterPetraNightActionSub02.seq.xml"),
         "default_archive": "ActN_SubPetra_02",
+        "default_country": "Petra",
         "default_is_evil": "true"
     },
     {
         "name": "Dark Guardian Boss Battle",
         "file": Path("#Application/SR_EnterPetraNightBoss.seq.xml"),
         "default_archive": "BossPetra",
+        "default_country": "Petra",
         "default_is_evil": "true"
     },
     {
         "name": "Holoska D Act 1",
         "file": Path("#Application/SR_EnterSnowDayAction.seq.xml"),
         "default_archive": "ActD_Snow",
+        "default_country": "Snow",
         "default_is_evil": "false"
     },
     {
         "name": "Holoska D Act 2",
         "file": Path("#Application/SR_EnterSnowDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubSnow_01",
+        "default_country": "Snow",
         "default_is_evil": "false"
     },
     {
         "name": "Holoska D Act 3",
         "file": Path("#Application/SR_EnterSnowDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubSnow_02",
+        "default_country": "Snow",
         "default_is_evil": "false"
     },
     {
         "name": "Holoska D Act 4",
         "file": Path("#Application/SR_EnterSnowDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubSnow_03",
+        "default_country": "Snow",
         "default_is_evil": "false"
     },
     {
         "name": "Holoska N Act 1",
         "file": Path("#Application/SR_EnterSnowNightAction.seq.xml"),
         "default_archive": "ActN_SnowEvil",
+        "default_country": "Snow",
         "default_is_evil": "true"
     },
     {
         "name": "Holoska N Act 2",
         "file": Path("#Application/SR_EnterSnowNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubSnow_01",
+        "default_country": "Snow",
         "default_is_evil": "true"
     },
     {
         "name": "Holoska N Act 3",
         "file": Path("#Application/SR_EnterSnowNightActionSub02.seq.xml"),
         "default_archive": "ActN_SubSnow_02",
+        "default_country": "Snow",
         "default_is_evil": "true"
     },
     {
         "name": "Dark Gaia Moray Boss Battle",
         "file": Path("#Application/SR_EnterSnowNightBoss.seq.xml"),
         "default_archive": "BossDarkGaiaMoray",
+        "default_country": "Snow",
         "default_is_evil": "true"
     },
     {
         "name": "Adabat D Act 1",
         "file": Path("#Application/SR_EnterBeachDayAction.seq.xml"),
         "default_archive": "ActD_Beach",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Adabat D Act 2",
         "file": Path("#Application/SR_EnterBeachDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubBeach_02",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Adabat D Act 3",
         "file": Path("#Application/SR_EnterBeachDayActionSub04.seq.xml"),
         "default_archive": "ActD_SubBeach_04",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Adabat D Act 4",
         "file": Path("#Application/SR_EnterBeachDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubBeach_01",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Adabat D Act 5",
         "file": Path("#Application/SR_EnterBeachDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubBeach_03",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Egg Lancer Boss Battle",
         "file": Path("#Application/SR_EnterBeachDayBoss.seq.xml"),
         "default_archive": "BossEggLancer",
+        "default_country": "Beach",
         "default_is_evil": "false"
     },
     {
         "name": "Adabat N Act 1",
         "file": Path("#Application/SR_EnterBeachNightAction.seq.xml"),
         "default_archive": "ActN_BeachEvil",
+        "default_country": "Beach",
         "default_is_evil": "true"
     },
     {
         "name": "Adabat N Act 2",
         "file": Path("#Application/SR_EnterBeachNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubBeach_01",
+        "default_country": "Beach",
         "default_is_evil": "true"
     },
     {
         "name": "Chun Nan D Act 1",
         "file": Path("#Application/SR_EnterChinaDayAction.seq.xml"),
         "default_archive": "ActD_China",
+        "default_country": "China",
         "default_is_evil": "false"
     },
     {
         "name": "Chun Nan D Act 2",
         "file": Path("#Application/SR_EnterChinaDayActionSub03.seq.xml"),
         "default_archive": "ActD_SubChina_03",
+        "default_country": "China",
         "default_is_evil": "false"
     },
     {
         "name": "Chun Nan D Act 3",
         "file": Path("#Application/SR_EnterChinaDayActionSub04.seq.xml"),
         "default_archive": "ActD_SubChina_04",
+        "default_country": "China",
         "default_is_evil": "false"
     },
     {
         "name": "Chun Nan D Act 4",
         "file": Path("#Application/SR_EnterChinaDayActionSub01.seq.xml"),
         "default_archive": "ActD_SubChina_01",
+        "default_country": "China",
         "default_is_evil": "false"
     },
     {
         "name": "Chun Nan D Act 5",
         "file": Path("#Application/SR_EnterChinaDayActionSub02.seq.xml"),
         "default_archive": "ActD_SubChina_02",
+        "default_country": "China",
         "default_is_evil": "false"
     },
     {
         "name": "Dark Gaia Pheonix Boss Battle",
         "file": Path("#Application/SR_EnterChinaNightBoss.seq.xml"),
         "default_archive": "BossPhoenix",
+        "default_country": "China",
         "default_is_evil": "true"
     },
     {
         "name": "Chun Nan N Act 1",
         "file": Path("#Application/SR_EnterChinaNightAction.seq.xml"),
         "default_archive": "ActN_ChinaEvil",
+        "default_country": "China",
         "default_is_evil": "true"
     },
     {
         "name": "Chun Nan N Act 2",
         "file": Path("#Application/SR_EnterChinaNightActionSub01.seq.xml"),
         "default_archive": "ActN_SubChina_01",
+        "default_country": "China",
         "default_is_evil": "true"
     },
     {
         "name": "Chun Nan N Act 3",
         "file": Path("#Application/SR_EnterChinaNightActionSub02.seq.xml"),
         "default_archive": "ActN_SubChina_02",
+        "default_country": "China",
         "default_is_evil": "true"
     },
     
@@ -995,6 +1060,7 @@ CAMPAIGN_STAGE_ARCHIVES = (
     # Skyscraper Scamper
     "ActD_NY",                # Day Act 1
     "ActD_SubNY_01",          # Day Act 2 / side act
+    "ActN_NYEvil",            # Night Act 1
 )
 
 FIXED_STAGE_ARCHIVES = {
@@ -1022,8 +1088,10 @@ def make_stage_pool_entry(archive: str) -> dict:
         if entry["default_archive"] == archive:
             return {
                 "archive": archive,
+                "country": entry["default_country"],
                 "is_evil": entry["default_is_evil"],
             }
+
     raise ValueError(f"No stage entry exists for archive '{archive}'.")
 
 STAGE_POOL = [
@@ -1064,11 +1132,11 @@ NO_UPGRADE_POOL = [
 
 BOSS_POOL = [
     #{"archive": "BossPetra", "is_evil": "true"},
-    {"archive": "BossEggRayBird", "is_evil": "false"},
+    {"archive": "BossEggRayBird", "country": "EU", "is_evil": "false"},
     #{"archive": "BossPhoenix", "is_evil": "true"},
-    {"archive": "BossEggLancer", "is_evil": "false"},
+    {"archive": "BossEggLancer", "country": "Beach", "is_evil": "false"},
     #{"archive": "BossDarkGaiaMoray", "is_evil": "true"},
-    {"archive": "BossEggBeetle", "is_evil": "false"}#requires a custom SR_RandoAfricaDayBoss wrapper
+    {"archive": "BossEggBeetle", "country": "Africa", "is_evil": "false"}#requires a custom SR_RandoAfricaDayBoss wrapper
 ]
 
 DEFAULT_LOCKED_BOSSES = [
@@ -1126,6 +1194,14 @@ def pick_stage(stage_pool: list[dict]) -> dict:
 def set_stage_data(xml_path: Path, stage: dict) -> None:
     text = xml_path.read_text(encoding="utf-8")
 
+    text, country_count = re.subn(
+        r"<CountryName>.*?</CountryName>",
+        f"<CountryName>{stage['country']}</CountryName>",
+        text,
+        count=1,
+        flags=re.DOTALL,
+    )
+
     text, archive_count = re.subn(
         r"<ArchiveName>.*?</ArchiveName>",
         f"<ArchiveName>{stage['archive']}</ArchiveName>",
@@ -1141,6 +1217,9 @@ def set_stage_data(xml_path: Path, stage: dict) -> None:
         count=1,
         flags=re.DOTALL,
     )
+
+    if country_count == 0:
+        raise ValueError(f"No <CountryName> found in {xml_path}")
 
     if archive_count == 0:
         raise ValueError(f"No <ArchiveName> found in {xml_path}")
@@ -1277,6 +1356,7 @@ def reset_all_files() -> None:
     for entry in STAGE_ENTRIES:
         default_stage = {
             "archive": entry["default_archive"],
+            "country": entry["default_country"],
             "is_evil": entry["default_is_evil"],
         }
 
@@ -1391,6 +1471,7 @@ def main() -> None:
             if entry["default_archive"] in DEFAULT_LOCKED_BOSSES:
                 chosen = {
                     "archive": entry["default_archive"],
+                    "country": entry["default_country"],
                     "is_evil": entry["default_is_evil"],
         }
             elif len(available_boss_pool) > 0:
@@ -1398,6 +1479,7 @@ def main() -> None:
             else:
                 chosen = {
                 "archive": entry["default_archive"],
+                "country": entry["default_country"],
                 "is_evil": entry["default_is_evil"],
         }
                 
@@ -1405,6 +1487,7 @@ def main() -> None:
         elif entry["default_archive"] in FIXED_STAGE_ARCHIVES | EXCLUDED_STAGE_ARCHIVES:
             chosen = {
                 "archive": entry["default_archive"],
+                "country": entry["default_country"],
                 "is_evil": entry["default_is_evil"],
             }
 

@@ -1,0 +1,39 @@
+{
+    "randomiser_name": "Sonic Unleashed Randomizer",
+    "version": "1.3.0",
+    "generated": "2026-07-31 04:02:45",
+    "seed": "HAcAGxEvNx4LFQI1BB8BECowDScrKTIxDhI0JQYYIiwaFg",
+    "settings": {
+        "shuffle_stages": true,
+        "shuffle_bosses": true,
+        "allow_day_night_swaps": true,
+        "first_stage_uses_no_upgrade_pool": true,
+        "campaign_stage_count": 32,
+        "randomised_stage_count": 31,
+        "fixed_stages": [
+            "ActD_SubEU_02"
+        ],
+        "excluded_stages": [
+            "ActD_SubAfrica_02",
+            "ActD_SubBeach_01",
+            "ActD_SubBeach_03",
+            "ActD_SubChina_01",
+            "ActD_SubChina_02",
+            "ActD_SubEU_03",
+            "ActD_SubEU_04",
+            "ActD_SubMykonos_02",
+            "ActD_SubNY_02",
+            "ActD_SubSnow_02",
+            "ActD_SubSnow_03",
+            "ActN_SubAfrica_02",
+            "ActN_SubAfrica_03",
+            "ActN_SubChina_02",
+            "ActN_SubEU_01",
+            "ActN_SubMykonos_01",
+            "ActN_SubNY_01",
+            "ActN_SubPetra_02",
+            "ActN_SubSnow_01",
+            "ActN_SubSnow_02"
+        ]
+    }
+}
