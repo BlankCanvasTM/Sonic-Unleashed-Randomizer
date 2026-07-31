@@ -13,29 +13,15 @@ env/
 # VS Code
 .vscode/
 
-# -----------------------------
-# Build output
-# -----------------------------
+
 dist/
 build/
 
-# -----------------------------
-# HedgeArcPack
-# -----------------------------
-HedgeArcPack.exe
 
-# -----------------------------
-# Generated game archives
-# -----------------------------
-#Application.ar.00
-#Application.arl
+/HedgeArcPack.exe
 
-# -----------------------------
-# Extracted game files
-# -----------------------------
-#Application/
 
-# -----------------------------
-# Logs
-# -----------------------------
-*.log
+/\#Application.ar.00
+/\#Application.arl
+
+/\#Application/
