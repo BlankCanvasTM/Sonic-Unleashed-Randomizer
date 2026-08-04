@@ -5,12 +5,36 @@ from assignment_generator import (
     get_no_upgrade_levels,
     get_non_dlc_levels,
 )
+
+from seed_system import (
+    generate_seed_code,
+    normalise_seed,
+    seed_to_integer,
+)
+
 from data import LevelState
 from medal_validator import validate_accessible_progression
 from xml_writer import write_xml_assignments
 
 
 def main() -> None:
+
+    seed_input = input(
+    "\nEnter a seed code "
+    "(leave blank to generate one): "
+    ).strip()
+
+    if seed_input:
+        seed_code = normalise_seed(seed_input)
+    else:
+        seed_code = generate_seed_code()
+
+    numeric_seed = seed_to_integer(seed_code)
+
+    print()
+    print(f"Seed Code: {seed_code}")
+
+
     level_state = LevelState()
 
     participating_levels = get_non_dlc_levels(
@@ -22,14 +46,15 @@ def main() -> None:
     )
 
     assignments, result = generate_valid_randomiser_assignments(
-        entrances=participating_levels,
-        randomisable_stages=participating_levels,
-        first_entrance=level_state.WID1,
-        first_stage_pool=first_stage_pool,
-        fixed_levels=set(),
-        max_attempts=10_000,
-        print_attempts=True,
-    )
+    entrances=participating_levels,
+    randomisable_stages=participating_levels,
+    first_entrance=level_state.WID1,
+    first_stage_pool=first_stage_pool,
+    seed=numeric_seed,
+    fixed_levels=set(),
+    max_attempts=10_000,
+    print_attempts=True,
+)
 
     print()
     print("=" * 70)
@@ -86,6 +111,10 @@ def main() -> None:
     )
     print()
     print("#Application is ready to pack.")
+
+    print()
+    print(f"Seed Code: {seed_code}")
+    print("Keep this code to reproduce the same randomisation.")
 
 
 if __name__ == "__main__":

@@ -41,7 +41,11 @@ def build_randomiser_assignments(
     first_entrance: Level,
     first_stage_pool: list[Level],
     fixed_levels: set[Level] | None = None,
+    rng: random.Random | None = None,
 ) -> list[StageAssignment]:
+
+    if rng is None:
+        rng = random.Random()
 
 
     if fixed_levels is None:
@@ -93,7 +97,9 @@ def build_randomiser_assignments(
     ]
 
     # Pick the first stage from the no-upgrade-compatible pool.
-    chosen_first_stage = random.choice(usable_first_stage_pool)
+    chosen_first_stage = rng.choice(
+    usable_first_stage_pool
+)
 
     assignments.append(
         StageAssignment(
@@ -118,7 +124,7 @@ def build_randomiser_assignments(
             f"stages: {len(available_stages)}"
         )
 
-    random.shuffle(available_stages)
+    rng.shuffle(available_stages)
 
     for entrance, stage in zip(
         remaining_entrances,
@@ -138,6 +144,7 @@ def generate_valid_randomiser_assignments(
     randomisable_stages: list[Level],
     first_entrance: Level,
     first_stage_pool: list[Level],
+    seed: int,
     fixed_levels: set[Level] | None = None,
     max_attempts: int = 10_000,
     print_attempts: bool = False,
@@ -145,10 +152,8 @@ def generate_valid_randomiser_assignments(
     list[StageAssignment],
     AccessibilityValidationResult,
 ]:
-    """
-    Repeatedly creates complete assignment sets until one passes
-    accessibility and medal validation.
-    """
+
+    rng = random.Random(seed)
 
     for attempt in range(1, max_attempts + 1):
         assignments = build_randomiser_assignments(
@@ -157,6 +162,7 @@ def generate_valid_randomiser_assignments(
             first_entrance=first_entrance,
             first_stage_pool=first_stage_pool,
             fixed_levels=fixed_levels,
+            rng=rng,
         )
 
         result = validate_accessible_progression(
