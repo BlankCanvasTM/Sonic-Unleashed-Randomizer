@@ -95,7 +95,6 @@ def main() -> None:
     assignments=assignments,
     source_directory=source_directory,
     output_directory=application_directory,
-    create_backup=True,
     print_progress=True,
 )
 
