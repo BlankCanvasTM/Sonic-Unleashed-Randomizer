@@ -32,21 +32,6 @@ def create_spoiler_log_lines(
     lines.append("Medal progression validation: Yes")
     lines.append("")
 
-    lines.append("PROGRESSION SUMMARY")
-    lines.append("-" * 70)
-    lines.append(
-        f"Validated entrances: "
-        f"{validation_result.completed_entrances}/"
-        f"{validation_result.total_entrances}"
-    )
-    lines.append(
-        f"Maximum obtainable Sun Medals: "
-        f"{validation_result.final_sun_medals}"
-    )
-    lines.append(
-        f"Maximum obtainable Moon Medals: "
-        f"{validation_result.final_moon_medals}"
-    )
     lines.append("")
 
     lines.append("HOW TO READ THIS LOG")
@@ -67,28 +52,6 @@ def create_spoiler_log_lines(
             f"{assignment.entrance.name:<40} "
             f"-> {assignment.stage.name}"
         )
-
-    lines.append("")
-    lines.append("XML FILE ASSIGNMENTS")
-    lines.append("-" * 70)
-
-    for assignment in assignments:
-        source_name = Path(assignment.stage.file).name
-        destination_name = Path(assignment.entrance.file).name
-
-        lines.append(
-            f"{assignment.entrance.name:<40} "
-            f"-> {assignment.stage.name}"
-        )
-        lines.append(
-            f"  {source_name} -> {destination_name}"
-        )
-
-    lines.append("")
-    lines.append("=" * 70)
-    lines.append(
-        "Keep the seed code to reproduce or share this randomisation."
-    )
 
     return lines
 
