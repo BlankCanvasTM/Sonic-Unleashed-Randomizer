@@ -1,5 +1,10 @@
 from pathlib import Path
 
+import sys
+
+from packer import pack_application
+from spoiler_log import write_spoiler_log
+
 from assignment_generator import (
     generate_valid_randomiser_assignments,
     get_no_upgrade_levels,
@@ -16,8 +21,22 @@ from data import LevelState
 from medal_validator import validate_accessible_progression
 from xml_writer import write_xml_assignments
 
+def get_base_directory() -> Path:
+
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+
+    return Path(__file__).resolve().parent
+
 
 def main() -> None:
+
+    base_directory = get_base_directory()
+
+    source_directory = base_directory / "Stages"
+    application_directory = base_directory / "#Application"
+    hedgearcpack_path = base_directory / "HedgeArcPack.exe"
+    spoiler_log_path = base_directory / "randomiser_log.txt"
 
     seed_input = input(
     "\nEnter a seed code "
@@ -57,9 +76,8 @@ def main() -> None:
 )
 
     print()
-    print("=" * 70)
     print("VALID RANDOMISATION FOUND")
-    print("=" * 70)
+    print()
 
     for assignment in assignments:
         print(
@@ -67,10 +85,6 @@ def main() -> None:
             f"-> {assignment.stage.name}"
         )
 
-    print()
-    print("=" * 70)
-    print("FINAL ACCESSIBILITY CHECK")
-    print("=" * 70)
 
     final_result = validate_accessible_progression(
         assignments,
@@ -82,23 +96,17 @@ def main() -> None:
             "The generated assignments failed final validation."
         )
 
-    print()
-    print("=" * 70)
-    print("WRITING XML ASSIGNMENTS")
-    print("=" * 70)
 
     write_xml_assignments(
-        assignments=assignments,
-        source_directory=Path("Stages"),
-        output_directory=Path("#Application"),
-        create_backup=True,
-        print_progress=True,
-    )
+    assignments=assignments,
+    source_directory=source_directory,
+    output_directory=application_directory,
+    create_backup=True,
+    print_progress=True,
+)
 
     print()
-    print("=" * 70)
     print("RANDOMISED XML FILES READY")
-    print("=" * 70)
     print(
         f"Completed entrances: "
         f"{final_result.completed_entrances}/"
@@ -112,10 +120,46 @@ def main() -> None:
     print()
     print("#Application is ready to pack.")
 
-    print()
-    print(f"Seed Code: {seed_code}")
-    print("Keep this code to reproduce the same randomisation.")
 
+    written_log_path = write_spoiler_log(
+        seed_code=seed_code,
+        assignments=assignments,
+        validation_result=final_result,
+        output_path=spoiler_log_path,
+    )
+
+    print(f"Spoiler log written to: {written_log_path}")
+
+
+    pack_result = pack_application(
+        hedgearcpack_path=hedgearcpack_path,
+        application_directory=application_directory,
+        print_output=True,
+    )
+
+    if not pack_result.success:
+        raise RuntimeError(
+            "The randomised XML files were generated successfully, "
+            "but HedgeArcPack failed to pack #Application."
+        )
+
+    print()
+    print("RANDOMISATION COMPLETE")
+    print(f"Seed Code: {seed_code}")
+    print(
+        f"Validated entrances: "
+        f"{final_result.completed_entrances}/"
+        f"{final_result.total_entrances}"
+    )
+    print(
+        f"Maximum obtainable medals: "
+        f"{final_result.final_sun_medals} Sun, "
+        f"{final_result.final_moon_medals} Moon"
+    )
+    print(f"Spoiler log: {written_log_path}")
+    print("Application archive packed successfully.")
+    print()
+    print("Keep the seed code to reproduce this randomisation.")
 
 if __name__ == "__main__":
     main()

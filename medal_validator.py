@@ -74,17 +74,6 @@ def validate_medal_progression(
     assignments: list[StageAssignment],
     print_progress: bool = False,
 ) -> MedalValidationResult:
-    """
-    Simulates the player's medal progression through a completed set of
-    randomised stage assignments.
-
-    For every assignment:
-
-    1. Check the medal requirement of the entrance.
-    2. If the player can enter it, add the medals contained in the stage
-       placed behind that entrance.
-    3. Stop immediately if a requirement cannot be met.
-    """
 
     current_sun = 0
     current_moon = 0
@@ -96,6 +85,7 @@ def validate_medal_progression(
         medal_type = get_required_medal_type(entrance)
         required_medals = entrance.required_medal
 
+        """
         if print_progress:
             print()
             print(f"Entrance: {entrance.name}")
@@ -104,6 +94,7 @@ def validate_medal_progression(
                 f"Available before entrance: "
                 f"{current_sun} Sun, {current_moon} Moon"
             )
+            """
 
         if medal_type == "sun" and current_sun < required_medals:
             failure = MedalValidationFailure(
@@ -176,13 +167,7 @@ def validate_accessible_progression(
     assignments: list[StageAssignment],
     print_progress: bool = False,
 ) -> AccessibilityValidationResult:
-    """
-    Simulates progression using each entrance's parent relationship and
-    medal requirement.
 
-    Every round, all currently playable entrances are completed so the
-    validator calculates the maximum medals the player could obtain.
-    """
 
     current_sun = 0
     current_moon = 0
@@ -230,6 +215,7 @@ def validate_accessible_progression(
         if not playable:
             break
 
+        """
         if print_progress:
             print()
             print("=" * 60)
@@ -240,6 +226,7 @@ def validate_accessible_progression(
                 f"{current_sun} Sun, {current_moon} Moon"
             )
             print(f"Playable entrances: {len(playable)}")
+            """
 
         for assignment in playable:
             entrance = assignment.entrance
@@ -250,6 +237,7 @@ def validate_accessible_progression(
             current_sun += stage.sun
             current_moon += stage.moon
 
+            """
             if print_progress:
                 print()
                 print(f"Completed entrance: {entrance.name}")
@@ -262,6 +250,7 @@ def validate_accessible_progression(
                     f"New total: "
                     f"{current_sun} Sun, {current_moon} Moon"
                 )
+                """
 
     blocked_entrances: list[BlockedEntrance] = []
 
@@ -302,6 +291,7 @@ def validate_accessible_progression(
 
     valid = len(completed) == len(assignments)
 
+    """
     if print_progress:
         print()
         print("=" * 60)
@@ -336,6 +326,7 @@ def validate_accessible_progression(
                         f"  Available: "
                         f"{blocked.available_medals}"
                     )
+                    """
 
     return AccessibilityValidationResult(
         valid=valid,
