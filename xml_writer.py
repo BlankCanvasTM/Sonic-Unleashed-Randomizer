@@ -106,20 +106,6 @@ def write_xml_assignments(
                 f"{destination_path}"
             )
 
-        if create_backup:
-            backup_path = destination_path.with_suffix(
-                destination_path.suffix + ".backup"
-            )
-
-            if not backup_path.exists():
-                shutil.copy2(
-                    destination_path,
-                    backup_path,
-                )
-
-        destination_path.write_bytes(
-            source_contents[source_path]
-        )
 
         result = XMLWriteResult(
             entrance_name=assignment.entrance.name,
