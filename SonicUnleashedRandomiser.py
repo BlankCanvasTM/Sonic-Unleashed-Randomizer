@@ -38,6 +38,11 @@ APOTOS_DAY_1_POOL = [
     and not level.req_shoe
 ]
 
+DLC_TYPES = {
+    Stage.DAY_DLC,
+    Stage.NIGHT_DLC
+}
+
 def pick_level(level_pool: list[Level]) -> Level:
     if not level_pool:
         raise ValueError("No eligible levels remain in the pool.")
