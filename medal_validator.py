@@ -10,20 +10,6 @@ class StageAssignment:
 
 
 @dataclass
-class MedalValidationFailure:
-    entrance_name : str
-    medal_type: str
-    required_medals: int
-    available_medals: int
-
-@dataclass
-class MedalValidationResult:
-    valid: bool
-    final_sun_medals: int
-    final_moon_medals: int
-    failure: MedalValidationFailure | None = None
-
-@dataclass
 class BlockedEntrance:
     entrance_name: str
     medal_type: str | None
@@ -70,99 +56,6 @@ def get_required_medal_type(entrance: Level) -> str | None:
     )
 
 
-def validate_medal_progression(
-    assignments: list[StageAssignment],
-    print_progress: bool = False,
-) -> MedalValidationResult:
-
-    current_sun = 0
-    current_moon = 0
-
-    for assignment in assignments:
-        entrance = assignment.entrance
-        stage = assignment.stage
-
-        medal_type = get_required_medal_type(entrance)
-        required_medals = entrance.required_medal
-
-        """
-        if print_progress:
-            print()
-            print(f"Entrance: {entrance.name}")
-            print(f"Randomised stage: {stage.name}")
-            print(
-                f"Available before entrance: "
-                f"{current_sun} Sun, {current_moon} Moon"
-            )
-            """
-
-        if medal_type == "sun" and current_sun < required_medals:
-            failure = MedalValidationFailure(
-                entrance_name=entrance.name,
-                medal_type="sun",
-                required_medals=required_medals,
-                available_medals=current_sun,
-            )
-
-            if print_progress:
-                print(
-                    f"FAILED: Requires {required_medals} Sun Medals, "
-                    f"but only {current_sun} are available."
-                )
-
-            return MedalValidationResult(
-                valid=False,
-                final_sun_medals=current_sun,
-                final_moon_medals=current_moon,
-                failure=failure,
-            )
-
-        if medal_type == "moon" and current_moon < required_medals:
-            failure = MedalValidationFailure(
-                entrance_name=entrance.name,
-                medal_type="moon",
-                required_medals=required_medals,
-                available_medals=current_moon,
-            )
-
-            if print_progress:
-                print(
-                    f"FAILED: Requires {required_medals} Moon Medals, "
-                    f"but only {current_moon} are available."
-                )
-
-            return MedalValidationResult(
-                valid=False,
-                final_sun_medals=current_sun,
-                final_moon_medals=current_moon,
-                failure=failure,
-            )
-
-        if print_progress and medal_type is not None:
-            print(
-                f"PASSED: Requires {required_medals} "
-                f"{medal_type.title()} Medals."
-            )
-
-        current_sun += stage.sun
-        current_moon += stage.moon
-
-        if print_progress:
-            print(
-                f"Stage contains: {stage.sun} Sun, {stage.moon} Moon"
-            )
-            print(
-                f"Available after stage: "
-                f"{current_sun} Sun, {current_moon} Moon"
-            )
-
-    return MedalValidationResult(
-        valid=True,
-        final_sun_medals=current_sun,
-        final_moon_medals=current_moon,
-    )
-
-
 def validate_accessible_progression(
     assignments: list[StageAssignment],
     print_progress: bool = False,
@@ -174,15 +67,10 @@ def validate_accessible_progression(
 
     completed: set[Level] = set()
 
-    assignment_by_entrance = {
-        assignment.entrance: assignment
-        for assignment in assignments
-    }
-
-    round_number = 0
+    #round_number = 0
 
     while True:
-        round_number += 1
+        #round_number += 1
         playable: list[StageAssignment] = []
 
         for assignment in assignments:

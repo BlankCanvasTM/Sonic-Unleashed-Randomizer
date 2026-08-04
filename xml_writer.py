@@ -52,7 +52,6 @@ def write_xml_assignments(
     assignments: list[StageAssignment],
     source_directory: str | Path,
     output_directory: str | Path,
-    create_backup: bool = True,
     print_progress: bool = True,
 ) -> list[XMLWriteResult]:
 

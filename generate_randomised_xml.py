@@ -1,9 +1,10 @@
 from pathlib import Path
-
 import sys
 
 from packer import pack_application
 from spoiler_log import write_spoiler_log
+from data import LevelState
+from xml_writer import write_xml_assignments
 
 from assignment_generator import (
     generate_valid_randomiser_assignments,
@@ -17,9 +18,7 @@ from seed_system import (
     seed_to_integer,
 )
 
-from data import LevelState
-from medal_validator import validate_accessible_progression
-from xml_writer import write_xml_assignments
+
 
 def get_base_directory() -> Path:
 
@@ -64,7 +63,7 @@ def main() -> None:
         participating_levels
     )
 
-    assignments, result = generate_valid_randomiser_assignments(
+    assignments, validation_result = generate_valid_randomiser_assignments(
     entrances=participating_levels,
     randomisable_stages=participating_levels,
     first_entrance=level_state.WID1,
@@ -86,12 +85,7 @@ def main() -> None:
         )
 
 
-    final_result = validate_accessible_progression(
-        assignments,
-        print_progress=True,
-    )
-
-    if not final_result.valid:
+    if not validation_result.valid:
         raise RuntimeError(
             "The generated assignments failed final validation."
         )
@@ -109,13 +103,13 @@ def main() -> None:
     print("RANDOMISED XML FILES READY")
     print(
         f"Completed entrances: "
-        f"{final_result.completed_entrances}/"
-        f"{final_result.total_entrances}"
+        f"{validation_result.completed_entrances}/"
+        f"{validation_result.total_entrances}"
     )
     print(
         f"Maximum obtainable medals: "
-        f"{final_result.final_sun_medals} Sun, "
-        f"{final_result.final_moon_medals} Moon"
+        f"{validation_result.final_sun_medals} Sun, "
+        f"{validation_result.final_moon_medals} Moon"
     )
     print()
     print("#Application is ready to pack.")
@@ -124,7 +118,7 @@ def main() -> None:
     written_log_path = write_spoiler_log(
         seed_code=seed_code,
         assignments=assignments,
-        validation_result=final_result,
+        validation_result=validation_result,
         output_path=spoiler_log_path,
     )
 
@@ -148,13 +142,13 @@ def main() -> None:
     print(f"Seed Code: {seed_code}")
     print(
         f"Validated entrances: "
-        f"{final_result.completed_entrances}/"
-        f"{final_result.total_entrances}"
+        f"{validation_result.completed_entrances}/"
+        f"{validation_result.total_entrances}"
     )
     print(
         f"Maximum obtainable medals: "
-        f"{final_result.final_sun_medals} Sun, "
-        f"{final_result.final_moon_medals} Moon"
+        f"{validation_result.final_sun_medals} Sun, "
+        f"{validation_result.final_moon_medals} Moon"
     )
     print(f"Spoiler log: {written_log_path}")
     print("Application archive packed successfully.")

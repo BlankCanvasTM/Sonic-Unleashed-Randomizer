@@ -9,7 +9,7 @@ GENERATED_SEED_LENGTH = 12
 
 def normalise_seed(seed: str) -> str:
 
-    normalised = seed.strip()
+    normalised = seed.strip().upper()
 
     if not normalised:
         raise ValueError("Seed cannot be empty.")

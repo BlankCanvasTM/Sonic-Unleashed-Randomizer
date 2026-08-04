@@ -7,8 +7,6 @@ from medal_validator import (
     validate_accessible_progression,
 )
 
-from pathlib import Path
-
 
 DLC_STAGE_TYPES = {
     Stage.DAY_DLC,
@@ -96,10 +94,9 @@ def build_randomiser_assignments(
         if stage not in fixed_levels
     ]
 
-    # Pick the first stage from the no-upgrade-compatible pool.
     chosen_first_stage = rng.choice(
-    usable_first_stage_pool
-)
+        usable_first_stage_pool
+    )
 
     assignments.append(
         StageAssignment(
@@ -189,28 +186,5 @@ def generate_valid_randomiser_assignments(
     )
 
 
-def assignments_to_file_mapping(
-    assignments: list[StageAssignment],
-) -> dict[Path, Path]:
-    """
-    Converts validated assignments into:
-
-    entrance XML path -> assigned stage XML path
-    """
-
-    file_mapping: dict[Path, Path] = {}
-
-    for assignment in assignments:
-        entrance_path = Path(assignment.entrance.file)
-        stage_path = Path(assignment.stage.file)
-
-        if entrance_path in file_mapping:
-            raise ValueError(
-                f"Duplicate entrance assignment: {entrance_path}"
-            )
-
-        file_mapping[entrance_path] = stage_path
-
-    return file_mapping
 
 

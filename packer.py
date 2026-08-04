@@ -42,8 +42,6 @@ def pack_application(
     ]
 
     if print_output:
-        print("Packing command:")
-        print(" ".join(f'"{part}"' for part in command))
         print()
 
     completed_process = subprocess.run(
