@@ -106,6 +106,10 @@ def write_xml_assignments(
                 f"{destination_path}"
             )
 
+        destination_path.write_bytes(
+            source_contents[source_path]
+        )
+
 
         result = XMLWriteResult(
             entrance_name=assignment.entrance.name,
