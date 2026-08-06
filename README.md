@@ -116,7 +116,7 @@ SonicUnleashedRandomizer.exe
 
 Ensure the following folder exists:
 
-#Application/
++#Application/
 
 and is located beside the executable.
 

@@ -1,31 +1,26 @@
 # -----------------------------
 # Python
 # -----------------------------
-__pycache__/
+__pycache__
 *.py[cod]
 *.pyo
 
 # Virtual environments
-.venv/
-venv/
-env/
+*env
 
 # VS Code
-.vscode/
+.vscode
 
 
 dist/
 build/
 
++#Application
+Stages
 
-/HedgeArcPack.exe
+randomiser_log.txt
+randomiser_metadata.json
 
-
-/\#Application.ar.00
-/\#Application.arl
-
-/\#Application/
-/Stages/
-
-/randomiser_log.txt
-/randomiser_metadata.json
+*.ar*
+*.exe
+*.ini
