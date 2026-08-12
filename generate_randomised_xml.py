@@ -69,7 +69,9 @@ def main() -> None:
     first_entrance=level_state.WID1,
     first_stage_pool=first_stage_pool,
     seed=numeric_seed,
-    fixed_levels=set(),
+    fixed_levels={
+    level_state.BOSS_DARK_GUARDIAN,
+    },
     max_attempts=10_000,
     print_attempts=True,
 )
