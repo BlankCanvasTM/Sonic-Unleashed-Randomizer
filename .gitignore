@@ -21,10 +21,10 @@ build/
 /HedgeArcPack.exe
 
 
-/\#Application.ar.00
-/\#Application.arl
+/\+#Application.ar.00
+/\+#Application.arl
 
-/\#Application/
+/\+#Application/
 /Stages/
 
 /randomiser_log.txt

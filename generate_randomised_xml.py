@@ -33,7 +33,7 @@ def main() -> None:
     base_directory = get_base_directory()
 
     source_directory = base_directory / "Stages"
-    application_directory = base_directory / "#Application"
+    application_directory = base_directory / "+#Application"
     hedgearcpack_path = base_directory / "HedgeArcPack.exe"
     spoiler_log_path = base_directory / "randomiser_log.txt"
 
@@ -71,6 +71,8 @@ def main() -> None:
     seed=numeric_seed,
     fixed_levels={
     level_state.BOSS_DARK_GUARDIAN,
+    level_state.BOSS_DARK_GAIA_PHEONIX,
+    level_state.BOSS_DARK_MORAY,
     },
     max_attempts=10_000,
     print_attempts=True,
@@ -113,7 +115,7 @@ def main() -> None:
         f"{validation_result.final_moon_medals} Moon"
     )
     print()
-    print("#Application is ready to pack.")
+    print("+#Application is ready to pack.")
 
 
     written_log_path = write_spoiler_log(
@@ -135,7 +137,7 @@ def main() -> None:
     if not pack_result.success:
         raise RuntimeError(
             "The randomised XML files were generated successfully, "
-            "but HedgeArcPack failed to pack #Application."
+            "but HedgeArcPack failed to pack +#Application."
         )
 
     print()

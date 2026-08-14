@@ -30,7 +30,7 @@ def pack_application(
 
     if not application_directory.is_dir():
         raise FileNotFoundError(
-            f"#Application directory was not found: "
+            f"+#Application directory was not found: "
             f"{application_directory}"
         )
 
