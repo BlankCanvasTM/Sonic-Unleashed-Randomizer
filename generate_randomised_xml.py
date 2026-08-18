@@ -71,28 +71,32 @@ def main() -> None:
         participating_levels
     )
 
-    fixed_levels={
-        level_state.BOSS_DARK_GUARDIAN,
-        level_state.BOSS_DARK_GAIA_PHEONIX,
-        level_state.BOSS_DARK_MORAY,
-        level_state.WID2_2,
-        level_state.WIN1_3,
-        level_state.SCD3_2,
-        level_state.RRD1_2,
-        level_state.RRD2_2,
-        level_state.DRD1_2,
-        level_state.DRD2_2,
-        level_state.DRN1_2,
-        level_state.ASD1_2,
-        level_state.SSD1_2,
-        level_state.JJD1_2,
-        level_state.JJN1_2,
-        level_state.SCD1_2,
-        level_state.SCD5,
-        level_state.JJN3,
-        level_state.CED1_2,
-        level_state.SSN3,
-    }
+    fixed_levels = {
+    level_state.BOSS_DARK_GUARDIAN,
+    level_state.BOSS_DARK_GAIA_PHEONIX,
+    level_state.BOSS_DARK_MORAY,
+}
+
+    if include_dlc:
+        fixed_levels.update({
+            level_state.WID2_2,
+            level_state.WIN1_3,
+            level_state.SCD3_2,
+            level_state.RRD1_2,
+            level_state.RRD2_2,
+            level_state.DRD1_2,
+            level_state.DRD2_2,
+            level_state.DRN1_2,
+            level_state.ASD1_2,
+            level_state.SSD1_2,
+            level_state.JJD1_2,
+            level_state.JJN1_2,
+            level_state.SCD1_2,
+            level_state.SCD5,
+            level_state.JJN3,
+            level_state.CED1_2,
+            level_state.SSN3,
+        })
 
     assignments, validation_result = generate_valid_randomiser_assignments(
         entrances=participating_levels,
