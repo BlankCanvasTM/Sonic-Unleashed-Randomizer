@@ -24,3 +24,14 @@ randomiser_metadata.json
 *.ar*
 *.exe
 *.ini
+
+/\+#Application.ar.00
+/\+#Application.arl
+
+/\+#Application/
+/Stages/
+
+/randomiser_log.txt
+/randomiser_metadata.json
+/sonic.ico
+/Sonic Unleashed Randomiser.spec
