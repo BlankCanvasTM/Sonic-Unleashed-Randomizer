@@ -37,10 +37,26 @@ def main() -> None:
     hedgearcpack_path = base_directory / "HedgeArcPack.exe"
     spoiler_log_path = base_directory / "randomiser_log.txt"
 
+    while True:
+        dlc_input = input(
+            "\nInclude DLC stages? [Y/N]: "
+        ).strip().lower()
+
+        if dlc_input in {"y", "yes"}:
+            include_dlc = True
+            break
+
+        if dlc_input in {"n", "no"}:
+            include_dlc = False
+            break
+
+        print("Please enter Y or N.")
+
     seed_input = input(
-    "\nEnter a seed code "
-    "(leave blank to generate one): "
+        "\nEnter a seed code "
+        "(leave blank to generate one): "
     ).strip()
+
 
     if seed_input:
         seed_code = normalise_seed(seed_input)
@@ -51,17 +67,44 @@ def main() -> None:
 
     print()
     print(f"Seed Code: {seed_code}")
+    print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
 
 
     level_state = LevelState()
 
-    participating_levels = get_non_dlc_levels(
-        level_state
-    )
+    if include_dlc:
+        participating_levels = level_state.levels
+    else:
+        participating_levels = get_non_dlc_levels(
+            level_state
+        )
 
     first_stage_pool = get_no_upgrade_levels(
         participating_levels
     )
+
+    fixed_levels={
+        level_state.BOSS_DARK_GUARDIAN,
+        level_state.BOSS_DARK_GAIA_PHEONIX,
+        level_state.BOSS_DARK_MORAY,
+        level_state.WID2_2,
+        level_state.WIN1_3,
+        level_state.SCD3_2,
+        level_state.RRD1_2,
+        level_state.RRD2_2,
+        level_state.DRD1_2,
+        level_state.DRD2_2,
+        level_state.DRN1_2,
+        level_state.ASD1_2,
+        level_state.SSD1_2,
+        level_state.JJD1_2,
+        level_state.JJN1_2,
+        level_state.SCD1_2,
+        level_state.SCD5,
+        level_state.JJN3,
+        level_state.CED1_2,
+        level_state.SSN3,
+        }
 
     assignments, validation_result = generate_valid_randomiser_assignments(
     entrances=participating_levels,
@@ -69,11 +112,7 @@ def main() -> None:
     first_entrance=level_state.WID1,
     first_stage_pool=first_stage_pool,
     seed=numeric_seed,
-    fixed_levels={
-    level_state.BOSS_DARK_GUARDIAN,
-    level_state.BOSS_DARK_GAIA_PHEONIX,
-    level_state.BOSS_DARK_MORAY,
-    },
+    fixed_levels=fixed_levels,
     max_attempts=10_000,
     print_attempts=True,
 )
@@ -123,6 +162,8 @@ def main() -> None:
         assignments=assignments,
         validation_result=validation_result,
         output_path=spoiler_log_path,
+        include_dlc=include_dlc,
+        fixed_levels=fixed_levels,
     )
 
     print(f"Spoiler log written to: {written_log_path}")
