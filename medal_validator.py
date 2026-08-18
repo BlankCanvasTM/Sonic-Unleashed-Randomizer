@@ -39,6 +39,7 @@ def get_required_medal_type(entrance: Level) -> str | None:
 
 def validate_accessible_progression(
     assignments: list[StageAssignment],
+    non_progressive: list[str],
     print_progress: bool = False,
 ) -> AccessibilityValidationResult:
 
@@ -58,6 +59,9 @@ def validate_accessible_progression(
     while True:
         complete = [starting_entrance]
         for queue in queued:
+            if queue.stage.name in non_progressive and len(queue.entrance.children):
+                blocked.append(queue)
+                break
             for child in queue.entrance.children:
                 child_assignment = find_assignment_from_entrance(child, assignments)
                 if not child_assignment: continue

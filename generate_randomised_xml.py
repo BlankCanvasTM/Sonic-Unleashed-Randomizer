@@ -6,6 +6,8 @@ from spoiler_log import write_spoiler_log
 from data import LevelState
 from xml_writer import write_xml_assignments
 
+import json
+
 from assignment_generator import (
     generate_valid_randomiser_assignments,
     get_no_upgrade_levels,
@@ -37,26 +39,12 @@ def main() -> None:
     hedgearcpack_path = base_directory / "HedgeArcPack.exe"
     spoiler_log_path = base_directory / "randomiser_log.txt"
 
-    while True:
-        dlc_input = input(
-            "\nInclude DLC stages? [Y/N]: "
-        ).strip().lower()
+    config_path = base_directory / "config.json"
+    with config_path.open() as config_json:
+        config = json.load(config_json)
 
-        if dlc_input in {"y", "yes"}:
-            include_dlc = True
-            break
-
-        if dlc_input in {"n", "no"}:
-            include_dlc = False
-            break
-
-        print("Please enter Y or N.")
-
-    seed_input = input(
-        "\nEnter a seed code "
-        "(leave blank to generate one): "
-    ).strip()
-
+    include_dlc = config["dlc"]
+    seed_input = config["seed"].strip()
 
     if seed_input:
         seed_code = normalise_seed(seed_input)
@@ -104,18 +92,19 @@ def main() -> None:
         level_state.JJN3,
         level_state.CED1_2,
         level_state.SSN3,
-        }
+    }
 
     assignments, validation_result = generate_valid_randomiser_assignments(
-    entrances=participating_levels,
-    randomisable_stages=participating_levels,
-    first_entrance=level_state.WID1,
-    first_stage_pool=first_stage_pool,
-    seed=numeric_seed,
-    fixed_levels=fixed_levels,
-    max_attempts=10_000,
-    print_attempts=True,
-)
+        entrances=participating_levels,
+        randomisable_stages=participating_levels,
+        first_entrance=level_state.WID1,
+        first_stage_pool=first_stage_pool,
+        seed=numeric_seed,
+        fixed_levels=fixed_levels,
+        non_progressive=config["non_progressive"],
+        max_attempts=10_000,
+        print_attempts=True,
+    )
 
     print()
     print("VALID RANDOMISATION FOUND")
@@ -135,11 +124,11 @@ def main() -> None:
 
 
     write_xml_assignments(
-    assignments=assignments,
-    source_directory=source_directory,
-    output_directory=application_directory,
-    print_progress=True,
-)
+        assignments=assignments,
+        source_directory=source_directory,
+        output_directory=application_directory,
+        print_progress=True,
+    )
 
     print()
     print("RANDOMISED XML FILES READY")
@@ -164,6 +153,7 @@ def main() -> None:
         output_path=spoiler_log_path,
         include_dlc=include_dlc,
         fixed_levels=fixed_levels,
+        non_progressive=config["non_progressive"]
     )
 
     print(f"Spoiler log written to: {written_log_path}")
