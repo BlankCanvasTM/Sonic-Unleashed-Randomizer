@@ -49,6 +49,7 @@ def create_spoiler_log_lines(
     validation_result: AccessibilityValidationResult,
     include_dlc: bool,
     fixed_levels: set,
+    non_progressive: list[str]
 ) -> list[str]:
 
     lines: list[str] = []
@@ -132,6 +133,12 @@ def create_spoiler_log_lines(
             )
 
     lines.append("")
+    lines.append("NON PROGRESSIVE STAGES")
+    lines.append("-" * 70)
+    for non_prog in non_progressive:
+        lines.append(non_prog)
+
+    lines.append("")
     lines.append("RANDOMISED STAGES")
     lines.append("-" * 70)
 
@@ -192,6 +199,7 @@ def write_spoiler_log(
     output_path: str | Path,
     include_dlc: bool,
     fixed_levels: set,
+    non_progressive: list[str]
 ) -> Path:
     """
     Creates and writes the spoiler log.
@@ -205,11 +213,12 @@ def write_spoiler_log(
     )
 
     lines = create_spoiler_log_lines(
-    seed_code=seed_code,
-    assignments=assignments,
-    validation_result=validation_result,
-    include_dlc=include_dlc,
-    fixed_levels=fixed_levels,
+        seed_code=seed_code,
+        assignments=assignments,
+        validation_result=validation_result,
+        include_dlc=include_dlc,
+        fixed_levels=fixed_levels,
+        non_progressive=non_progressive
     )
 
     output_path.write_text(

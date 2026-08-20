@@ -79,7 +79,8 @@ class LevelState:
 		self.WID1 = WID1 = Level(self.levels, "Windmill Isle Day Act 1", Stage.DAY_TUT, 0, None, "MykonosDayTutorial", Shoe.NONE, [])
 		self.WID2 = WID2 = Level(self.levels, "Windmill Isle Day Act 2", Stage.DAY_MAIN, 0, WID1, "MykonosDayAction", Shoe.NONE, [])
 		self.WIN1 = WIN1 = Level(self.levels, "Windmill Isle Night Act 1", Stage.NIGHT_MAIN, 0, WID2, "MykonosNightAction", Shoe.NONE, [])
-		self.SCN1 = SCN1 = Level(self.levels, "Savannah Citadel Night Act 1", Stage.NIGHT_MAIN, 0, WIN1, "AfricaNightAction", Shoe.NONE, [])
+		self.TD1 = TD1 = Level(self.levels, "Tornado Defense Act 1", Stage.DAY_TUT, 0, WIN1, "ExAction1", Shoe.NONE, [])
+		self.SCN1 = SCN1 = Level(self.levels, "Savannah Citadel Night Act 1", Stage.NIGHT_MAIN, 0, TD1, "AfricaNightAction", Shoe.NONE, [])
 		self.SCD1 = SCD1 = Level(self.levels, "Savannah Citadel Day Act 1", Stage.DAY_MAIN, 0, SCN1, "AfricaDayAction", Shoe.NONE, [])
 		self.BOSS_EGG_BEETLE = BOSS_EGG_BEETLE = Level(self.levels, "Egg Beetle", Stage.DAY_BOSS, 0, SCD1, "AfricaDayBoss", Shoe.NONE, [])
 		self.RRN1 = RRN1 = Level(self.levels, "Rooftop Run Night Act 1", Stage.NIGHT_MAIN, 15, BOSS_EGG_BEETLE, "EUNightAction", Shoe.NONE, [])
@@ -99,6 +100,7 @@ class LevelState:
 		self.BOSS_DARK_GUARDIAN = BOSS_DARK_GUARDIAN = Level(self.levels, "Dark Guardian", Stage.NIGHT_BOSS, 0, ASN1, "PetraNightBoss", Shoe.NONE, [])
 		self.JJD1 = JJD1 = Level(self.levels, "Jungle Joyride Day Act 1", Stage.DAY_MAIN, 120, ASD1, "BeachDayAction", Shoe.NONE, [Shoe.STOMP, Shoe.WALL])
 		self.BOSS_EGG_LANCER = BOSS_EGG_LANCER = Level(self.levels, "Egg Lancer", Stage.DAY_BOSS, 0, JJD1, "BeachDayBoss", Shoe.NONE, [])
+		self.TD2 = TD2 = Level(self.levels, "Tornado Defense Act 2", Stage.DAY_TUT, 0, BOSS_EGG_LANCER, "ExAction2", Shoe.NONE, [])
 		
 		self.WID3 = WID3 = Level(self.levels, "Windmill Isle Day Act 3", Stage.DAY_SIDE, 30, WID2, "MykonosDayActionSub01", Shoe.NONE, [])
 		self.WID4 = WID4 = Level(self.levels, "Windmill Isle Day Act 4", Stage.DAY_DLC, 0, WID2, "MykonosDayActionSub02", Shoe.NONE, [])
@@ -145,8 +147,6 @@ class LevelState:
 		self.JJD5 = JJD5 = Level(self.levels, "Jungle Joyride Day Act 5", Stage.DAY_DLC, 0, JJD1, "BeachDayActionSub03", Shoe.NONE, [])
 		self.JJN2 = JJN2 = Level(self.levels, "Jungle Joyride Night Act 2", Stage.NIGHT_SIDE, 60, JJN1, "BeachNightActionSub01", Shoe.NONE, [])
 		
-		self.TD1 = TD1 = Level(self.levels, "Tornado Defense Act 1", Stage.DAY_MAIN, 0, None, "ExAction1", Shoe.NONE, [])
-		self.TD2 = TD2 = Level(self.levels, "Tornado Defense Act 2", Stage.DAY_SIDE, 0, None, "ExAction2", Shoe.NONE, [])
 		self.WID1_2 = WID1_2 = Level(self.levels, "Windmill Isle Day Act 1-2", Stage.DAY_DLC, 0, WID2, "MykonosDayActionSub04", Shoe.NONE, [])
 		self.WID2_2 = WID2_2 = Level(self.levels, "Windmill Isle Day Act 2-2", Stage.DAY_DLC, 0, WID2, "MykonosDayActionSub06", Shoe.NONE, [Shoe.WALL, Shoe.LIGHT]) # CURRENTLY BROKEN LOADS STAGE BUT NOT ASSETS NEEDED FOR THE HARD MODE 
 		self.WIN1_2 = WIN1_2 = Level(self.levels, "Windmill Isle Night Act 1-2", Stage.NIGHT_DLC, 0, WIN1, "MykonosNightActionSub03", Shoe.NONE, [])

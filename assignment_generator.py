@@ -143,6 +143,7 @@ def generate_valid_randomiser_assignments(
     first_stage_pool: list[Level],
     seed: int,
     fixed_levels: set[Level] | None = None,
+    non_progressive: list[str] = [],
     max_attempts: int = 10_000,
     print_attempts: bool = False,
 ) -> tuple[
@@ -164,6 +165,7 @@ def generate_valid_randomiser_assignments(
 
         result = validate_accessible_progression(
             assignments,
+            non_progressive,
             print_progress=False,
         )
 
