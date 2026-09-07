@@ -1,10 +1,12 @@
 from pathlib import Path
+import secrets
 import sys
 
 from packer import pack_application
 from spoiler_log import write_spoiler_log
 from data import LevelState
 from xml_writer import write_xml_assignments
+from enemy_randomiser import randomise_all_night_stages
 
 from assignment_generator import (
     generate_valid_randomiser_assignments,
@@ -36,6 +38,7 @@ def main() -> None:
     application_directory = base_directory / "+#Application"
     hedgearcpack_path = base_directory / "HedgeArcPack.exe"
     spoiler_log_path = base_directory / "randomiser_log.txt"
+    enemy_spoiler_log_path = base_directory / "enemy_spoiler_log.txt"
 
     while True:
         dlc_input = input(
@@ -51,6 +54,39 @@ def main() -> None:
             break
 
         print("Please enter Y or N.")
+
+    while True:
+        enemy_input = input(
+            "\nRandomise Night stage enemies? [Y/N]: "
+        ).strip().lower()
+
+        if enemy_input in {"y", "yes"}:
+            randomise_enemies = True
+            break
+
+        if enemy_input in {"n", "no"}:
+            randomise_enemies = False
+            break
+
+        print("Please enter Y or N.")
+
+    enemy_seed = None
+
+    if randomise_enemies:
+        enemy_seed_input = input(
+            "\nEnter an enemy seed "
+            "(leave blank to generate one): "
+        ).strip()
+
+        if enemy_seed_input:
+            try:
+                enemy_seed = int(enemy_seed_input)
+            except ValueError as exc:
+                raise ValueError(
+                    "Enemy seed must be a whole number."
+                ) from exc
+        else:
+            enemy_seed = secrets.randbits(64)
 
     seed_input = input(
         "\nEnter a seed code "
@@ -68,6 +104,13 @@ def main() -> None:
     print()
     print(f"Seed Code: {seed_code}")
     print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
+    print(
+        f"Enemy Randomisation: "
+        f"{'Yes' if randomise_enemies else 'No'}"
+    )
+
+    if randomise_enemies:
+        print(f"Enemy Seed: {enemy_seed}")
 
 
     level_state = LevelState()
@@ -198,6 +241,19 @@ def main() -> None:
             "but HedgeArcPack failed to pack +#Application."
         )
 
+    enemy_result = None
+
+    if randomise_enemies:
+        print()
+        print("RANDOMISING NIGHT STAGE ENEMIES")
+
+        enemy_result = randomise_all_night_stages(
+            seed=enemy_seed,
+            log_path=enemy_spoiler_log_path,
+            pack_archives=True,
+            print_progress=True,
+        )
+
     print()
     print("RANDOMISATION COMPLETE")
     print(f"Seed Code: {seed_code}")
@@ -212,9 +268,23 @@ def main() -> None:
         f"{validation_result.final_moon_medals} Moon"
     )
     print(f"Spoiler log: {written_log_path}")
+
+    if enemy_result is not None:
+        print(f"Enemy seed: {enemy_seed}")
+        print(
+            f"Enemy spoiler log: "
+            f"{enemy_result['log_path']}"
+        )
+
     print("Application archive packed successfully.")
     print()
     print("Keep the seed code to reproduce this randomisation.")
+
+    if randomise_enemies:
+        print(
+            "Keep the enemy seed to reproduce the same "
+            "enemy randomisation."
+        )
 
 if __name__ == "__main__":
     main()

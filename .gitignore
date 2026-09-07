@@ -26,6 +26,8 @@ build/
 
 /\+#Application/
 /Stages/
+/Base Areas/
+/Stages To Randomise Enemies/
 
 /randomiser_log.txt
 /randomiser_metadata.json
