@@ -164,6 +164,7 @@ def main() -> None:
             level_state.SCD5,
             level_state.JJN3,
             level_state.SSN3,
+            level_state.WID1_2,
         })
 
     assignments, validation_result = generate_valid_randomiser_assignments(

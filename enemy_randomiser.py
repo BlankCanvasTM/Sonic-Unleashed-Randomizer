@@ -10,10 +10,11 @@ from copy import deepcopy
 from pathlib import Path
 
 from enemy_data import (
-	Enemy,
-	EnemyState,
-	HOLE_RANDOM_TARGETS,
-	PROTECTED_HOLE_SOURCE_TYPES,
+    Enemy,
+    EnemyState,
+    HOLE_RANDOM_TARGETS,
+    HOLE_FIRST_STATE_OVERRIDES,
+    PROTECTED_HOLE_SOURCE_TYPES,
 )
 
 from dataclasses import dataclass
@@ -38,6 +39,7 @@ PRESERVED_FIELDS = ("Position", "Rotation", "SetObjectID")
 
 RANDOMISE_DIRECT_ENEMIES = True
 RANDOMISE_ENEMY_HOLES = True
+LARGE_ENEMY_ROLL_SIZE = 33
 
 def _append_parameter(parent: ET.Element, name: str, value: object) -> None:
 	element = ET.SubElement(parent, name)
@@ -111,6 +113,33 @@ def _build_replacement_element(
 	new_element.tail = original.tail
 
 	return new_element
+
+def _build_bonus_large_enemy(
+    hole: ET.Element,
+    enemy: Enemy,
+) -> ET.Element:
+    """
+    Create a bonus Titan or Big Mother at an EnemyHole position.
+
+    Position and Rotation are copied from the hole.
+    SetObjectID is intentionally omitted because the bonus enemy
+    is not part of the hole's event logic.
+    """
+
+    new_element = ET.Element(enemy.class_name)
+
+    for name, value in enemy.parameters.items():
+        _append_parameter(new_element, name, value)
+
+    for field_name in ("Position", "Rotation"):
+        field = hole.find(field_name)
+
+        if field is not None:
+            new_element.append(deepcopy(field))
+
+    new_element.tail = hole.tail
+
+    return new_element
 
 
 def _choose_replacement(
@@ -415,6 +444,7 @@ def randomise_direct_enemies(
 	total_skipped = 0
 	total_holes_randomised = 0
 	total_holes_skipped = 0
+	total_large_enemies = 0
 	files_changed = 0
 
 	for set_file in set_files:
@@ -453,8 +483,13 @@ def randomise_direct_enemies(
 			skipped_count = 0
 
 		if RANDOMISE_ENEMY_HOLES:
-			hole_randomised_count, hole_skipped_count = randomise_enemy_holes(
+			(
+				hole_randomised_count,
+				hole_skipped_count,
+				large_enemy_count,
+			) = randomise_enemy_holes(
 				root,
+				enemy_state,
 				rng,
 				set_file.name,
 				file_entries,
@@ -462,6 +497,7 @@ def randomise_direct_enemies(
 		else:
 			hole_randomised_count = 0
 			hole_skipped_count = 0
+			large_enemy_count = 0
 
 		if (
 			randomised_count
@@ -492,6 +528,7 @@ def randomise_direct_enemies(
 		total_skipped += skipped_count
 		total_holes_randomised += hole_randomised_count
 		total_holes_skipped += hole_skipped_count
+		total_large_enemies += large_enemy_count
 
 	log_entries.extend([
 		"=" * 60,
@@ -504,6 +541,7 @@ def randomise_direct_enemies(
 		f"Direct enemies skipped: {total_skipped}",
 		f"Enemy holes randomised: {total_holes_randomised}",
 		f"Enemy holes skipped: {total_holes_skipped}",
+		f"Bonus large enemies spawned: {total_large_enemies}",
 		"",
 	])
 
@@ -516,98 +554,171 @@ def randomise_direct_enemies(
 			"skipped": total_skipped,
 			"holes_randomised": total_holes_randomised,
 			"holes_skipped": total_holes_skipped,
+			"large_enemies": total_large_enemies,
 		},
 		log_entries,
 	)
 
 def randomise_enemy_holes(
-	root: ET.Element,
-	rng: random.Random,
-	file_name: str,
-	log_entries: list[str],
-) -> tuple[int, int]:
+    root: ET.Element,
+    enemy_state: EnemyState,
+    rng: random.Random,
+    file_name: str,
+    log_entries: list[str],
+) -> tuple[int, int, int]:
 
-	randomised_count = 0
-	skipped_count = 0
+    randomised_count = 0
+    skipped_count = 0
+    large_enemy_count = 0
 
-	for element in root.iter("EnemyObjEnemyHole"):
-		enemy_type_element = element.find("EnemyType")
+    parent_map = {
+        child: parent
+        for parent in root.iter()
+        for child in parent
+    }
 
-		if enemy_type_element is None or enemy_type_element.text is None:
-			continue
+    for element in list(root.iter("EnemyObjEnemyHole")):
+        enemy_type_element = element.find("EnemyType")
 
-		original_type = int(enemy_type_element.text.strip())
-		generate_max_element = element.find("GenerateMaxCount")
+        if enemy_type_element is None or enemy_type_element.text is None:
+            continue
 
-		generate_max_count = None
+        original_type = int(enemy_type_element.text.strip())
+        generate_max_element = element.find("GenerateMaxCount")
 
-		if generate_max_element is not None and generate_max_element.text is not None:
-			generate_max_count = int(generate_max_element.text.strip())
+        generate_max_count = None
 
-		set_object_id = _get_set_object_id(element)
-		position = _get_position(element)
+        if (
+            generate_max_element is not None
+            and generate_max_element.text is not None
+        ):
+            generate_max_count = int(
+                generate_max_element.text.strip()
+            )
 
-		if original_type in PROTECTED_HOLE_SOURCE_TYPES:
-			log_entries.extend([
-				"[SKIPPED HOLE]",
-				f"File: {file_name}",
-				f"SetObjectID: {set_object_id}",
-				f"Position: {position}",
-				f"EnemyType: {original_type}",
-				"Reason: Protected Float / progression enemy type",
-				"",
-			])
+        set_object_id = _get_set_object_id(element)
+        position = _get_position(element)
 
-			skipped_count += 1
-			continue
+        if original_type in PROTECTED_HOLE_SOURCE_TYPES:
+            log_entries.extend([
+                "[SKIPPED HOLE]",
+                f"File: {file_name}",
+                f"SetObjectID: {set_object_id}",
+                f"Position: {position}",
+                f"EnemyType: {original_type}",
+                "Reason: Protected Float / progression enemy type",
+                "",
+            ])
 
-		if generate_max_count == -1:
-			log_entries.extend([
-				"[SKIPPED HOLE]",
-				f"File: {file_name}",
-				f"SetObjectID: {set_object_id}",
-				f"Position: {position}",
-				f"EnemyType: {original_type}",
-				f"GenerateMaxCount: {generate_max_count}",
-				"Reason: Infinite/progression spawner",
-				"",
-			])
+            skipped_count += 1
+            continue
 
-			skipped_count += 1
-			continue
+        if generate_max_count == -1:
+            log_entries.extend([
+                "[SKIPPED HOLE]",
+                f"File: {file_name}",
+                f"SetObjectID: {set_object_id}",
+                f"Position: {position}",
+                f"EnemyType: {original_type}",
+                f"GenerateMaxCount: {generate_max_count}",
+                "Reason: Infinite/progression spawner",
+                "",
+            ])
 
-		replacement_type = rng.choice(HOLE_RANDOM_TARGETS)
+            skipped_count += 1
+            continue
 
-		enemy_type_element.text = str(replacement_type)
+        replacement_type = rng.choice(HOLE_RANDOM_TARGETS)
 
-		if replacement_type == 0:
-			first_state_element = element.find("FirstState")
+        enemy_type_element.text = str(replacement_type)
 
-			if first_state_element is not None:
-				first_state_element.text = "0"
+        if replacement_type in HOLE_FIRST_STATE_OVERRIDES:
+            first_state_element = element.find("FirstState")
 
-		first_state_element = element.find("FirstState")
+            if first_state_element is not None:
+                first_state_element.text = str(
+                    HOLE_FIRST_STATE_OVERRIDES[
+                        replacement_type
+                    ]
+                )
 
-		first_state = (
-			first_state_element.text.strip()
-			if first_state_element is not None and first_state_element.text is not None
-			else "Unknown"
-)
+        first_state_element = element.find("FirstState")
 
-		log_entries.extend([
-			"[RANDOMISED HOLE]",
-			f"File: {file_name}",
-			f"SetObjectID: {set_object_id}",
-			f"Position: {position}",
-			f"Original EnemyType: {original_type}",
-			f"FirstState: {first_state}",
-			f"Replacement EnemyType: {replacement_type}",
-			"",
-		])
+        first_state = (
+            first_state_element.text.strip()
+            if (
+                first_state_element is not None
+                and first_state_element.text is not None
+            )
+            else "Unknown"
+        )
 
-		randomised_count += 1
+        log_entries.extend([
+            "[RANDOMISED HOLE]",
+            f"File: {file_name}",
+            f"SetObjectID: {set_object_id}",
+            f"Position: {position}",
+            f"Original EnemyType: {original_type}",
+            f"FirstState: {first_state}",
+            f"Replacement EnemyType: {replacement_type}",
+            "",
+        ])
 
-	return randomised_count, skipped_count
+        randomised_count += 1
+
+        large_enemy_roll = rng.randrange(
+            LARGE_ENEMY_ROLL_SIZE
+        )
+
+        if large_enemy_roll == 31:
+            large_enemy = enemy_state.TITAN
+
+        elif large_enemy_roll == 32:
+            large_enemy = enemy_state.BIG_MOTHER
+
+        else:
+            large_enemy = None
+
+        if large_enemy is not None:
+            parent = parent_map.get(element)
+
+            if parent is not None:
+                bonus_element = _build_bonus_large_enemy(
+                    element,
+                    large_enemy,
+                )
+
+                element_index = list(parent).index(element)
+
+                parent.insert(
+                    element_index + 1,
+                    bonus_element,
+                )
+
+                log_entries.extend([
+                    "[BONUS LARGE ENEMY]",
+                    f"File: {file_name}",
+                    f"Source Hole SetObjectID: {set_object_id}",
+                    f"Position: {position}",
+                    (
+                        f"Enemy: {large_enemy.name} "
+                        f"({large_enemy.class_name})"
+                    ),
+                    "SetObjectID: None",
+                    (
+                        f"Roll: {large_enemy_roll} / "
+                        f"{LARGE_ENEMY_ROLL_SIZE - 1}"
+                    ),
+                    "",
+                ])
+
+                large_enemy_count += 1
+
+    return (
+        randomised_count,
+        skipped_count,
+        large_enemy_count,
+    )
 
 @dataclass
 class PackResult:
@@ -743,6 +854,7 @@ def randomise_all_night_stages(
 	total_direct_skipped = 0
 	total_holes_randomised = 0
 	total_holes_skipped = 0
+	total_large_enemies = 0
 
 	if print_progress:
 		print(f"Enemy seed: {seed}")

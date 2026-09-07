@@ -268,7 +268,6 @@ class EnemyState:
 			"Fire Master",
 			"EvilEnemyMasterFire",
 			MASTER_PARAMETERS.copy(),
-			randomisable_target=False,
 		)
 
 		self.MASTER_LIGHTNING = Enemy(
@@ -425,6 +424,7 @@ HOLE_ENEMY_TYPES = {
 
 HOLE_FIRST_STATE_OVERRIDES = {
     0: 0,  # Nightmare
+	1: 0,  # Deep Nightmare
 }
 
 PROTECTED_HOLE_SOURCE_TYPES = {
@@ -435,8 +435,7 @@ PROTECTED_HOLE_SOURCE_TYPES = {
 	25,  # Egg Blizzard
 }
 
-# Fire Master may be randomised away, but never generated somewhere new.
-EXCLUDED_HOLE_TARGET_TYPES = {18}
+EXCLUDED_HOLE_TARGET_TYPES = set()
 
 HOLE_RANDOM_TARGETS = [
 	enemy_type
