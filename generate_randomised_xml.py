@@ -83,11 +83,13 @@ def main() -> None:
         participating_levels
     )
 
-    fixed_levels = {
-    level_state.BOSS_DARK_GUARDIAN,
-    level_state.BOSS_DARK_GAIA_PHEONIX,
-    level_state.BOSS_DARK_MORAY,
-}
+    #fixed_levels = {
+    #level_state.BOSS_DARK_GUARDIAN,
+    #level_state.BOSS_DARK_GAIA_PHEONIX,
+    #level_state.BOSS_DARK_MORAY,
+#}
+
+    fixed_levels = set()
 
     if include_dlc:
         fixed_levels.update({
