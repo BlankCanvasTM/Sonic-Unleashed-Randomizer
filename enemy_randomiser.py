@@ -32,6 +32,7 @@ BASE_DIR = get_base_directory()
 
 STAGES_TO_RANDOMISE_DIR = BASE_DIR / "Stages To Randomise Enemies"
 BASE_AREAS_DIR = BASE_DIR / "Base Areas"
+ENEMY_RANDOMISER_DIR = BASE_DIR / "Enemy Randomiser"
 HEDGEARCPACK_PATH = BASE_DIR / "HedgeArcPack.exe"
 
 
@@ -798,9 +799,14 @@ def pack_archive(
 			)
 
 	if result.success:
+		ENEMY_RANDOMISER_DIR.mkdir(
+			parents=True,
+			exist_ok=True,
+		)
+
 		move_packed_archives_to_root(
 			archive_directory,
-			BASE_DIR,
+			ENEMY_RANDOMISER_DIR,
 		)
 
 	return result
