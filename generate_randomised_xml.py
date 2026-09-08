@@ -1,12 +1,17 @@
 from pathlib import Path
 import secrets
 import sys
+import shutil
 
 from packer import pack_application
 from spoiler_log import write_spoiler_log
 from data import LevelState
 from xml_writer import write_xml_assignments
-from enemy_randomiser import randomise_all_night_stages
+
+from enemy_randomiser import (
+    randomise_all_night_stages,
+    reset_all_night_stages,
+)
 
 from assignment_generator import (
     generate_valid_randomiser_assignments,
@@ -29,6 +34,48 @@ def get_base_directory() -> Path:
 
     return Path(__file__).resolve().parent
 
+def reset_stages_to_vanilla(
+    source_directory: Path,
+    application_directory: Path,
+) -> int:
+
+    if not source_directory.is_dir():
+        raise FileNotFoundError(
+            f"Stages folder was not found: {source_directory}"
+        )
+
+    if not application_directory.is_dir():
+        raise FileNotFoundError(
+            f"+#Application folder was not found: {application_directory}"
+        )
+
+    restored_count = 0
+
+    for source_file in sorted(source_directory.glob("*.seq.xml")):
+        destination_file = application_directory / source_file.name
+
+        shutil.copy2(
+            source_file,
+            destination_file,
+        )
+
+        restored_count += 1
+
+    return restored_count
+
+
+def ask_yes_no(prompt: str) -> bool:
+    while True:
+        answer = input(prompt).strip().lower()
+
+        if answer in {"y", "yes"}:
+            return True
+
+        if answer in {"n", "no"}:
+            return False
+
+        print("Please enter Y or N.")
+
 
 def main() -> None:
 
@@ -40,35 +87,81 @@ def main() -> None:
     spoiler_log_path = base_directory / "randomiser_log.txt"
     enemy_spoiler_log_path = base_directory / "enemy_spoiler_log.txt"
 
-    while True:
-        dlc_input = input(
+    reset_files = ask_yes_no(
+    "\nReset files to vanilla? [Y/N]: "
+    )
+
+    if reset_files:
+        while True:
+            print()
+            print("What would you like to reset?")
+            print("1. Stages only")
+            print("2. Enemies only")
+            print("3. Both")
+            print()
+
+            reset_choice = input(
+                "\nSelect an option [1/2/3]: "
+            ).strip()
+
+            if reset_choice in {"1", "2", "3"}:
+                break
+
+            print("Please enter 1, 2 or 3.")
+
+        reset_stages = reset_choice in {"1", "3"}
+        reset_enemies = reset_choice in {"2", "3"}
+
+        if reset_stages:
+            print()
+            print("RESETTING STAGES TO VANILLA")
+
+            restored_stage_files = reset_stages_to_vanilla(
+                source_directory=source_directory,
+                application_directory=application_directory,
+            )
+
+            print(
+                f"Stage sequence files restored: "
+                f"{restored_stage_files}"
+            )
+
+            pack_result = pack_application(
+                hedgearcpack_path=hedgearcpack_path,
+                application_directory=application_directory,
+                print_output=True,
+            )
+
+            print()
+            print()
+            print()
+
+            if not pack_result.success:
+                raise RuntimeError(
+                    "Stage files were restored, but "
+                    "+#Application packing failed."
+                )
+
+        if reset_enemies:
+            reset_all_night_stages(
+                pack_archives=True,
+                print_progress=True,
+            )
+
+    randomise_stages = ask_yes_no(
+    "\nRandomise stages? [Y/N]: "
+    )
+
+    include_dlc = False
+
+    if randomise_stages:
+        include_dlc = ask_yes_no(
             "\nInclude DLC stages? [Y/N]: "
-        ).strip().lower()
+        )
 
-        if dlc_input in {"y", "yes"}:
-            include_dlc = True
-            break
-
-        if dlc_input in {"n", "no"}:
-            include_dlc = False
-            break
-
-        print("Please enter Y or N.")
-
-    while True:
-        enemy_input = input(
-            "\nRandomise Night stage enemies? [Y/N]: "
-        ).strip().lower()
-
-        if enemy_input in {"y", "yes"}:
-            randomise_enemies = True
-            break
-
-        if enemy_input in {"n", "no"}:
-            randomise_enemies = False
-            break
-
-        print("Please enter Y or N.")
+    randomise_enemies = ask_yes_no(
+    "\nRandomise Night stage enemies? [Y/N]: "
+    )
 
     enemy_seed = None
 
@@ -88,22 +181,26 @@ def main() -> None:
         else:
             enemy_seed = secrets.randbits(64)
 
-    seed_input = input(
-        "\nEnter a seed code "
-        "(leave blank to generate one): "
-    ).strip()
+    seed_code = None
+    numeric_seed = None
 
+    if randomise_stages:
+        seed_input = input(
+            "\nEnter a stage seed code "
+            "(leave blank to generate one): "
+        ).strip()
 
-    if seed_input:
-        seed_code = normalise_seed(seed_input)
-    else:
-        seed_code = generate_seed_code()
+        if seed_input:
+            seed_code = normalise_seed(seed_input)
+        else:
+            seed_code = generate_seed_code()
 
-    numeric_seed = seed_to_integer(seed_code)
+        numeric_seed = seed_to_integer(seed_code)
 
-    print()
-    print(f"Seed Code: {seed_code}")
-    print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
+        print()
+        print(f"Stage Seed Code: {seed_code}")
+        print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
+
     print(
         f"Enemy Randomisation: "
         f"{'Yes' if randomise_enemies else 'No'}"
@@ -113,133 +210,136 @@ def main() -> None:
         print(f"Enemy Seed: {enemy_seed}")
 
 
-    level_state = LevelState()
 
-    if include_dlc:
-        participating_levels = level_state.levels
-    else:
-        participating_levels = get_non_dlc_levels(
-            level_state
+    if randomise_stages:
+
+        level_state = LevelState()
+
+        if include_dlc:
+            participating_levels = level_state.levels
+        else:
+            participating_levels = get_non_dlc_levels(
+                level_state
+            )
+
+        first_stage_pool = get_no_upgrade_levels(
+            participating_levels
         )
 
-    first_stage_pool = get_no_upgrade_levels(
-        participating_levels
-    )
+        #fixed_levels = {
+        #level_state.BOSS_DARK_GUARDIAN,
+        #level_state.BOSS_DARK_GAIA_PHEONIX,
+        #level_state.BOSS_DARK_MORAY,
+    #}
 
-    #fixed_levels = {
-    #level_state.BOSS_DARK_GUARDIAN,
-    #level_state.BOSS_DARK_GAIA_PHEONIX,
-    #level_state.BOSS_DARK_MORAY,
-#}
+        fixed_levels = set()
 
-    fixed_levels = set()
+        if include_dlc:
+            fixed_levels.update({
+                level_state.WID2_2,
+                level_state.WIN1_3,
+                level_state.SCD3_2,
+                level_state.RRD1_2,
+                level_state.RRD2_2,
+                level_state.RRD4,
+                level_state.RRD5,
+                level_state.RRN1_2,
+                level_state.CED1_2,
+                level_state.CED2_2,
+                level_state.CED3,
+                level_state.CED4,
+                level_state.CEN2,
+                level_state.CEN3,
+                level_state.DRD1_2,
+                level_state.DRD2_2,
+                level_state.DRN1_2,
+                level_state.ASD1_2,
+                level_state.ASD3,
+                level_state.ASN2,
+                level_state.SSD1_2,
+                level_state.SSN2,
+                level_state.JJD1_2,
+                level_state.JJN1_2,
+                level_state.SCD1_2,
+                level_state.SCD5,
+                level_state.JJN3,
+                level_state.SSN3,
+            })
 
-    if include_dlc:
-        fixed_levels.update({
-            level_state.WID2_2,
-            level_state.WIN1_3,
-            level_state.SCD3_2,
-            level_state.RRD1_2,
-            level_state.RRD2_2,
-            level_state.RRD4,
-            level_state.RRD5,
-            level_state.RRN1_2,
-            level_state.CED1_2,
-            level_state.CED2_2,
-            level_state.CED3,
-            level_state.CED4,
-            level_state.CEN2,
-            level_state.CEN3,
-            level_state.DRD1_2,
-            level_state.DRD2_2,
-            level_state.DRN1_2,
-            level_state.ASD1_2,
-            level_state.ASD3,
-            level_state.ASN2,
-            level_state.SSD1_2,
-            level_state.SSN2,
-            level_state.JJD1_2,
-            level_state.JJN1_2,
-            level_state.SCD1_2,
-            level_state.SCD5,
-            level_state.JJN3,
-            level_state.SSN3,
-        })
-
-    assignments, validation_result = generate_valid_randomiser_assignments(
-    entrances=participating_levels,
-    randomisable_stages=participating_levels,
-    first_entrance=level_state.WID1,
-    first_stage_pool=first_stage_pool,
-    seed=numeric_seed,
-    fixed_levels=fixed_levels,
-    max_attempts=10_000,
-    print_attempts=True,
-)
-
-    print()
-    print("VALID RANDOMISATION FOUND")
-    print()
-
-    for assignment in assignments:
-        print(
-            f"{assignment.entrance.name:<40} "
-            f"-> {assignment.stage.name}"
-        )
-
-
-    if not validation_result.valid:
-        raise RuntimeError(
-            "The generated assignments failed final validation."
-        )
-
-
-    write_xml_assignments(
-    assignments=assignments,
-    source_directory=source_directory,
-    output_directory=application_directory,
-    print_progress=True,
-)
-
-    print()
-    print("RANDOMISED XML FILES READY")
-    print(
-        f"Completed entrances: "
-        f"{validation_result.completed_entrances}/"
-        f"{validation_result.total_entrances}"
-    )
-    print(
-        f"Maximum obtainable medals: "
-        f"{validation_result.final_sun_medals} Sun, "
-        f"{validation_result.final_moon_medals} Moon"
-    )
-    print()
-    print("+#Application is ready to pack.")
-
-
-    written_log_path = write_spoiler_log(
-        seed_code=seed_code,
-        assignments=assignments,
-        validation_result=validation_result,
-        output_path=spoiler_log_path,
-        include_dlc=include_dlc,
+        assignments, validation_result = generate_valid_randomiser_assignments(
+        entrances=participating_levels,
+        randomisable_stages=participating_levels,
+        first_entrance=level_state.WID1,
+        first_stage_pool=first_stage_pool,
+        seed=numeric_seed,
         fixed_levels=fixed_levels,
+        max_attempts=10_000,
+        print_attempts=True,
     )
 
-    print(f"Spoiler log written to: {written_log_path}")
+        print()
+        print("VALID RANDOMISATION FOUND")
+        print()
+
+        for assignment in assignments:
+            print(
+                f"{assignment.entrance.name:<40} "
+                f"-> {assignment.stage.name}"
+            )
 
 
-    pack_result = pack_application(
-        hedgearcpack_path=hedgearcpack_path,
-        application_directory=application_directory,
-        print_output=True,
+        if not validation_result.valid:
+            raise RuntimeError(
+                "The generated assignments failed final validation."
+            )
+
+
+        write_xml_assignments(
+        assignments=assignments,
+        source_directory=source_directory,
+        output_directory=application_directory,
+        print_progress=True,
     )
 
-    if not pack_result.success:
-        raise RuntimeError(
-            "The randomised XML files were generated successfully, "
-            "but HedgeArcPack failed to pack +#Application."
+        print()
+        print("RANDOMISED XML FILES READY")
+        print(
+            f"Completed entrances: "
+            f"{validation_result.completed_entrances}/"
+            f"{validation_result.total_entrances}"
         )
+        print(
+            f"Maximum obtainable medals: "
+            f"{validation_result.final_sun_medals} Sun, "
+            f"{validation_result.final_moon_medals} Moon"
+        )
+        print()
+        print("+#Application is ready to pack.")
+
+
+        written_log_path = write_spoiler_log(
+            seed_code=seed_code,
+            assignments=assignments,
+            validation_result=validation_result,
+            output_path=spoiler_log_path,
+            include_dlc=include_dlc,
+            fixed_levels=fixed_levels,
+        )
+
+        print(f"Spoiler log written to: {written_log_path}")
+
+
+        pack_result = pack_application(
+            hedgearcpack_path=hedgearcpack_path,
+            application_directory=application_directory,
+            print_output=True,
+        )
+
+        if not pack_result.success:
+            raise RuntimeError(
+                "The randomised XML files were generated successfully, "
+                "but HedgeArcPack failed to pack +#Application."
+            )
 
     enemy_result = None
 
@@ -256,29 +356,41 @@ def main() -> None:
 
     print()
     print("RANDOMISATION COMPLETE")
-    print(f"Seed Code: {seed_code}")
-    print(
-        f"Validated entrances: "
-        f"{validation_result.completed_entrances}/"
-        f"{validation_result.total_entrances}"
-    )
-    print(
-        f"Maximum obtainable medals: "
-        f"{validation_result.final_sun_medals} Sun, "
-        f"{validation_result.final_moon_medals} Moon"
-    )
-    print(f"Spoiler log: {written_log_path}")
 
-    if enemy_result is not None:
-        print(f"Enemy seed: {enemy_seed}")
+    if randomise_stages:
+        print(f"Seed Code: {seed_code}")
         print(
-            f"Enemy spoiler log: "
-            f"{enemy_result['log_path']}"
+            f"Validated entrances: "
+            f"{validation_result.completed_entrances}/"
+            f"{validation_result.total_entrances}"
         )
+        print(
+            f"Maximum obtainable medals: "
+            f"{validation_result.final_sun_medals} Sun, "
+            f"{validation_result.final_moon_medals} Moon"
+        )
+        print(f"Spoiler log: {written_log_path}")
 
-    print("Application archive packed successfully.")
-    print()
-    print("Keep the seed code to reproduce this randomisation.")
+    else:
+        print()
+        print("Stage Randomisation: No")
+
+    if randomise_enemies:
+        print()
+        print("Enemy Randomisation: Yes")
+        print(f"Enemy Seed: {enemy_seed}")
+        print(f"Enemy spoiler log: {enemy_spoiler_log_path}")
+
+    else:
+        print()
+        print("Enemy Randomisation: No")
+
+
+    if randomise_stages:
+        print("Application archive packed successfully.")
+        print()
+        print("Keep the seed code to reproduce this randomisation.")                    
+            
 
     if randomise_enemies:
         print(

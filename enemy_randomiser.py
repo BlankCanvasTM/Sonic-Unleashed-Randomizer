@@ -805,6 +805,68 @@ def pack_archive(
 
 	return result
 
+def reset_all_night_stages(
+    pack_archives: bool = True,
+    print_progress: bool = True,
+) -> dict[str, int]:
+
+    stage_pairs = find_stage_pairs()
+
+    if not stage_pairs:
+        raise FileNotFoundError(
+            "No matching Night-stage folders were found."
+        )
+
+    total_files_restored = 0
+
+    if print_progress:
+        print()
+        print("RESETTING NIGHT STAGE ENEMIES")
+
+
+    for stage_folder, base_stage_folder in stage_pairs:
+
+        restored_count = restore_clean_enemysets(
+            base_stage_folder=base_stage_folder,
+            working_stage_folder=stage_folder,
+        )
+
+        total_files_restored += restored_count
+
+        if print_progress:
+            print(
+                f"{stage_folder.name}: "
+                f"{restored_count} SET files restored"
+            )
+
+        if pack_archives:
+            pack_result = pack_archive(
+                HEDGEARCPACK_PATH,
+                stage_folder,
+                print_output=print_progress,
+            )
+
+            if not pack_result.success:
+                raise RuntimeError(
+                    f"Enemy reset completed for "
+                    f"{stage_folder.name}, but archive "
+                    f"packing failed."
+                )
+
+    if print_progress:
+        print()
+        print("ENEMY RESET COMPLETE")
+        print(
+            f"Stages restored: {len(stage_pairs)}"
+        )
+        print(
+            f"SET files restored: {total_files_restored}"
+        )
+
+    return {
+        "stages_restored": len(stage_pairs),
+        "files_restored": total_files_restored,
+    }
 
 
 def randomise_all_night_stages(
