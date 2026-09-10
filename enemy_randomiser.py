@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 import sys
 from copy import deepcopy
 from pathlib import Path
+from packer import get_hedgearcpack_path
 
 from enemy_data import (
     Enemy,
@@ -33,7 +34,7 @@ BASE_DIR = get_base_directory()
 STAGES_TO_RANDOMISE_DIR = BASE_DIR / "Stages To Randomise Enemies"
 BASE_AREAS_DIR = BASE_DIR / "Base Areas"
 ENEMY_RANDOMISER_DIR = BASE_DIR / "Enemy Randomiser"
-HEDGEARCPACK_PATH = BASE_DIR / "HedgeArcPack.exe"
+HEDGEARCPACK_PATH = get_hedgearcpack_path(BASE_DIR)
 
 
 PRESERVED_FIELDS = ("Position", "Rotation", "SetObjectID")

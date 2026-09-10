@@ -3,10 +3,11 @@ import secrets
 import sys
 import shutil
 
-from packer import pack_application
+from packer import pack_application, get_hedgearcpack_path
 from spoiler_log import write_spoiler_log
 from data import LevelState
 from xml_writer import write_xml_assignments
+
 
 from enemy_randomiser import (
     randomise_all_night_stages,
@@ -83,7 +84,7 @@ def main() -> None:
 
     source_directory = base_directory / "Stages"
     application_directory = base_directory / "+#Application"
-    hedgearcpack_path = base_directory / "HedgeArcPack.exe"
+    hedgearcpack_path = get_hedgearcpack_path(base_directory)
     spoiler_log_path = base_directory / "randomiser_log.txt"
     enemy_spoiler_log_path = base_directory / "enemy_spoiler_log.txt"
 

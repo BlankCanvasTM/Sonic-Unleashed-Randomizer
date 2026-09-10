@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 import subprocess
 
 
@@ -11,6 +12,29 @@ class PackResult:
     return_code: int
     stdout: str
     stderr: str
+
+
+def get_hedgearcpack_path(base_directory: str | Path) -> Path:
+    base_directory = Path(base_directory)
+
+    if sys.platform == "win32":
+        executable_name = "HedgeArcPack.exe"
+    elif sys.platform.startswith("linux"):
+        executable_name = "HedgeArcPack"
+    else:
+        raise RuntimeError(
+            f"Unsupported operating system: {sys.platform}"
+        )
+
+    hedgearcpack_path = base_directory / executable_name
+
+    if not hedgearcpack_path.is_file():
+        raise FileNotFoundError(
+            f"HedgeArcPack executable was not found: "
+            f"{hedgearcpack_path}"
+        )
+
+    return hedgearcpack_path
 
 
 def pack_application(
