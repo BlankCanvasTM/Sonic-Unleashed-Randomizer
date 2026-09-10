@@ -13,6 +13,23 @@ DLC_STAGE_TYPES = {
     Stage.NIGHT_DLC,
 }
 
+FORBIDDEN_STAGE_ENTRANCE_PAIRS = {
+    ("Egg Beetle", "Tornado Defense Act 1"),
+    ("Egg Beetle", "Tornado Defense Act 2"),
+    ("Windmill Isle Night Act 1", "Tornado Defense Act 1"),
+    ("Windmill Isle Night Act 1", "Tornado Defense Act 2"),
+}
+
+
+def has_forbidden_assignment(
+    assignments: list[StageAssignment],
+) -> bool:
+    return any(
+        (assignment.entrance.name, assignment.stage.name)
+        in FORBIDDEN_STAGE_ENTRANCE_PAIRS
+        for assignment in assignments
+    )
+
 
 def is_dlc(level: Level) -> bool:
     return level.type in DLC_STAGE_TYPES
@@ -161,6 +178,11 @@ def generate_valid_randomiser_assignments(
             fixed_levels=fixed_levels,
             rng=rng,
         )
+
+        if has_forbidden_assignment(assignments):
+            if print_attempts:
+                print(f"Attempt {attempt}: invalid (forbidden stage/entrance pairing)")
+            continue
 
         result = validate_accessible_progression(
             assignments,

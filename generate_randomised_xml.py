@@ -26,6 +26,12 @@ from seed_system import (
     seed_to_integer,
 )
 
+from werehog_skill_randomiser import (
+    pack_evil_action_common,
+    randomise_werehog_skills,
+    reset_werehog_skills,
+)
+
 
 
 def get_base_directory() -> Path:
@@ -87,6 +93,11 @@ def main() -> None:
     hedgearcpack_path = get_hedgearcpack_path(base_directory)
     spoiler_log_path = base_directory / "randomiser_log.txt"
     enemy_spoiler_log_path = base_directory / "enemy_spoiler_log.txt"
+    skill_spoiler_log_path = base_directory / "werehog_skill_spoiler_log.txt"
+
+    reset_stages = False
+    reset_enemies = False
+    reset_skills = False
 
     reset_files = ask_yes_no(
     "\nReset files to vanilla? [Y/N]: "
@@ -98,20 +109,24 @@ def main() -> None:
             print("What would you like to reset?")
             print("1. Stages only")
             print("2. Enemies only")
-            print("3. Both")
+            print("3. Werehog skills only")
+            print("4. Everything")
             print()
 
             reset_choice = input(
-                "\nSelect an option [1/2/3]: "
+                "\nSelect an option [1/2/3/4]: "
             ).strip()
 
-            if reset_choice in {"1", "2", "3"}:
+            if reset_choice in {"1", "2", "3", "4"}:
                 break
 
-            print("Please enter 1, 2 or 3.")
+            print("Please enter 1, 2, 3 or 4.")
 
-        reset_stages = reset_choice in {"1", "3"}
-        reset_enemies = reset_choice in {"2", "3"}
+        reset_stages = reset_choice in {"1", "4"}
+        reset_enemies = reset_choice in {"2", "4"}
+        reset_skills = reset_choice in {"3", "4"}
+
+        application_needs_pack = False
 
         if reset_stages:
             print()
@@ -127,21 +142,36 @@ def main() -> None:
                 f"{restored_stage_files}"
             )
 
+            application_needs_pack = True
+
+        if reset_skills:
+            print()
+
+            reset_werehog_skills(
+                pack_archives=False,
+                print_progress=True,
+            )
+
+            application_needs_pack = True
+
+        if application_needs_pack:
             pack_result = pack_application(
                 hedgearcpack_path=hedgearcpack_path,
                 application_directory=application_directory,
                 print_output=True,
             )
 
-            print()
-            print()
-            print()
-
             if not pack_result.success:
                 raise RuntimeError(
-                    "Stage files were restored, but "
+                    "Files were restored, but "
                     "+#Application packing failed."
                 )
+
+        if reset_skills:
+            pack_evil_action_common(
+                hedgearcpack_path=hedgearcpack_path,
+                print_output=True,
+            )
 
         if reset_enemies:
             reset_all_night_stages(
@@ -150,9 +180,9 @@ def main() -> None:
             )
 
     randomise_stages = ask_yes_no(
-    "\nRandomise stages? [Y/N]: "
+        "\nRandomise stages? [Y/N]: "
     )
-
+                    
     include_dlc = False
 
     if randomise_stages:
@@ -161,7 +191,11 @@ def main() -> None:
         )
 
     randomise_enemies = ask_yes_no(
-    "\nRandomise Night stage enemies? [Y/N]: "
+        "\nRandomise Night stage enemies? [Y/N]: "
+    )
+
+    randomise_skills = ask_yes_no(
+        "\nRandomise Werehog combo unlocks? [Y/N]: "
     )
 
     enemy_seed = None
@@ -185,9 +219,9 @@ def main() -> None:
     seed_code = None
     numeric_seed = None
 
-    if randomise_stages:
+    if randomise_stages or randomise_skills:
         seed_input = input(
-            "\nEnter a stage seed code "
+            "\nEnter a seed code "
             "(leave blank to generate one): "
         ).strip()
 
@@ -199,8 +233,10 @@ def main() -> None:
         numeric_seed = seed_to_integer(seed_code)
 
         print()
-        print(f"Stage Seed Code: {seed_code}")
-        print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
+        print(f"Seed Code: {seed_code}")
+
+        if randomise_stages:
+            print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
 
     print(
         f"Enemy Randomisation: "
@@ -330,6 +366,20 @@ def main() -> None:
         print(f"Spoiler log written to: {written_log_path}")
 
 
+    skill_result = None
+
+    if randomise_skills:
+        print()
+        print("RANDOMISING WEREHOG SKILLS")
+
+        skill_result = randomise_werehog_skills(
+            seed_code=seed_code,
+            log_path=skill_spoiler_log_path,
+            pack_archives=False,
+            print_progress=True,
+        )
+
+    if randomise_stages or randomise_skills:
         pack_result = pack_application(
             hedgearcpack_path=hedgearcpack_path,
             application_directory=application_directory,
@@ -338,9 +388,16 @@ def main() -> None:
 
         if not pack_result.success:
             raise RuntimeError(
-                "The randomised XML files were generated successfully, "
-                "but HedgeArcPack failed to pack +#Application."
+                "Randomisation completed, but "
+                "HedgeArcPack failed to pack +#Application."
             )
+
+    if randomise_skills:
+        pack_evil_action_common(
+            hedgearcpack_path=hedgearcpack_path,
+            print_output=True,
+        )
+
 
     enemy_result = None
 
@@ -358,8 +415,10 @@ def main() -> None:
     print()
     print("RANDOMISATION COMPLETE")
 
-    if randomise_stages:
+    if randomise_stages or randomise_skills:
         print(f"Seed Code: {seed_code}")
+
+    if randomise_stages:
         print(
             f"Validated entrances: "
             f"{validation_result.completed_entrances}/"
@@ -376,6 +435,15 @@ def main() -> None:
         print()
         print("Stage Randomisation: No")
 
+    if randomise_skills:
+        print()
+        print("Werehog Skill Randomisation: Yes")
+        print(f"Werehog skill spoiler log: {skill_spoiler_log_path}")
+
+    else:
+        print()
+        print("Werehog Skill Randomisation: No")
+
     if randomise_enemies:
         print()
         print("Enemy Randomisation: Yes")
@@ -387,7 +455,7 @@ def main() -> None:
         print("Enemy Randomisation: No")
 
 
-    if randomise_stages:
+    if randomise_stages or randomise_skills:
         print("Application archive packed successfully.")
         print()
         print("Keep the seed code to reproduce this randomisation.")                    

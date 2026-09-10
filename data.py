@@ -99,6 +99,8 @@ class LevelState:
 		self.BOSS_DARK_GUARDIAN = BOSS_DARK_GUARDIAN = Level(self.levels, "Dark Guardian", Stage.NIGHT_BOSS, 0, ASN1, "PetraNightBoss", Shoe.NONE, [])
 		self.JJD1 = JJD1 = Level(self.levels, "Jungle Joyride Day Act 1", Stage.DAY_MAIN, 120, ASD1, "BeachDayAction", Shoe.NONE, [Shoe.STOMP, Shoe.WALL])
 		self.BOSS_EGG_LANCER = BOSS_EGG_LANCER = Level(self.levels, "Egg Lancer", Stage.DAY_BOSS, 0, JJD1, "BeachDayBoss", Shoe.NONE, [])
+		self.EGGMANLAND = EGGMANLAND = Level(self.levels, "Eggmanland", Stage.DAY_MAIN, 0, JJD1, "EggManLandAction", Shoe.NONE, [Shoe.LIGHT, Shoe.STOMP, Shoe.WALL, Shoe.AIR])
+		self.BOSS_EGG_DRAGOON = BOSS_EGG_DRAGOON = Level(self.levels, "Egg Dragoon", Stage.NIGHT_BOSS, 0, EGGMANLAND, "EggManLandBoss", Shoe.NONE, [])
 		
 		self.WID3 = WID3 = Level(self.levels, "Windmill Isle Day Act 3", Stage.DAY_SIDE, 30, WID2, "MykonosDayActionSub01", Shoe.NONE, [])
 		self.WID4 = WID4 = Level(self.levels, "Windmill Isle Day Act 4", Stage.DAY_DLC, 0, WID2, "MykonosDayActionSub02", Shoe.NONE, [])

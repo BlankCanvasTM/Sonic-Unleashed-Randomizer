@@ -341,6 +341,7 @@ class EnemyState:
 			ELEMENT_PARAMETERS.copy(),
 			["EvilEnemyEggElement", "SonicEnemyEElement"],
 			randomisable_source=False,
+			randomisable_target = False,
 		)
 		self.EGG_TYPHOON = Enemy(
 			self.enemies,

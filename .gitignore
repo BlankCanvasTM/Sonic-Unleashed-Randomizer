@@ -23,13 +23,19 @@ build/
 
 /\+#Application.ar.00
 /\+#Application.arl
+/\+EvilActionCommon.ar.00
+/\+EvilActionCommon.arl
 
 /\+#Application/
 /Stages/
 /Base Areas/
 /Stages To Randomise Enemies/
+/Clean Werehog Combos/
+/+EvilActionCommon/
 
 /randomiser_log.txt
+/werehog_skill_spoiler_log.txt
+/enemy_spoiler_log.txt
 /randomiser_metadata.json
 /sonic.ico
 /Sonic Unleashed Randomiser.spec
