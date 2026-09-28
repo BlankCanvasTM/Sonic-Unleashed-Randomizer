@@ -436,7 +436,9 @@ PROTECTED_HOLE_SOURCE_TYPES = {
 	25,  # Egg Blizzard
 }
 
-EXCLUDED_HOLE_TARGET_TYPES = set()
+EXCLUDED_HOLE_TARGET_TYPES = {
+    25,  # Egg Blizzard
+}
 
 HOLE_RANDOM_TARGETS = [
 	enemy_type

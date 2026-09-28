@@ -7,7 +7,6 @@ from medal_validator import (
     validate_accessible_progression,
 )
 
-
 DLC_STAGE_TYPES = {
     Stage.DAY_DLC,
     Stage.NIGHT_DLC,
@@ -19,6 +18,28 @@ FORBIDDEN_STAGE_ENTRANCE_PAIRS = {
     ("Windmill Isle Night Act 1", "Tornado Defense Act 1"),
     ("Windmill Isle Night Act 1", "Tornado Defense Act 2"),
 }
+
+DARK_GAIA_EXCLUDED_STAGE_TYPES = {
+    Stage.DAY_BOSS,
+    Stage.NIGHT_BOSS,
+}
+
+DARK_GAIA_EXCLUDED_STAGE_NAMES = {
+    "Tornado Defense Act 1",
+    "Tornado Defense Act 2",
+    "Rooftop Run Act 3",
+}
+
+
+def get_dark_gaia_stage_pool(
+    levels: list[Level],
+) -> list[Level]:
+    return [
+        level
+        for level in levels
+        if level.type not in DARK_GAIA_EXCLUDED_STAGE_TYPES
+        and level.name not in DARK_GAIA_EXCLUDED_STAGE_NAMES
+    ]
 
 
 def has_forbidden_assignment(
@@ -34,21 +55,16 @@ def has_forbidden_assignment(
 def is_dlc(level: Level) -> bool:
     return level.type in DLC_STAGE_TYPES
 
+
 def get_non_dlc_levels(level_state: LevelState) -> list[Level]:
-    return [
-        level
-        for level in level_state.levels
-        if not is_dlc(level)
-    ]
+    return [level for level in level_state.levels if not is_dlc(level)]
+
 
 def get_no_upgrade_levels(
     levels: list[Level],
 ) -> list[Level]:
-    return [
-        level
-        for level in levels
-        if not level.req_shoe
-    ]
+    return [level for level in levels if not level.req_shoe]
+
 
 def build_randomiser_assignments(
     entrances: list[Level],
@@ -61,7 +77,6 @@ def build_randomiser_assignments(
 
     if rng is None:
         rng = random.Random()
-
 
     if fixed_levels is None:
         fixed_levels = set()
@@ -85,14 +100,11 @@ def build_randomiser_assignments(
     usable_first_stage_pool = [
         stage
         for stage in first_stage_pool
-        if stage in stage_set
-        and stage not in fixed_levels
+        if stage in stage_set and stage not in fixed_levels
     ]
 
     if not usable_first_stage_pool:
-        raise ValueError(
-            "The first-stage pool contains no usable stages."
-        )
+        raise ValueError("The first-stage pool contains no usable stages.")
 
     assignments: list[StageAssignment] = []
 
@@ -106,14 +118,10 @@ def build_randomiser_assignments(
         )
 
     available_stages = [
-        stage
-        for stage in randomisable_stages
-        if stage not in fixed_levels
+        stage for stage in randomisable_stages if stage not in fixed_levels
     ]
 
-    chosen_first_stage = rng.choice(
-        usable_first_stage_pool
-    )
+    chosen_first_stage = rng.choice(usable_first_stage_pool)
 
     assignments.append(
         StageAssignment(
@@ -127,8 +135,7 @@ def build_randomiser_assignments(
     remaining_entrances = [
         entrance
         for entrance in entrances
-        if entrance not in fixed_levels
-        and entrance is not first_entrance
+        if entrance not in fixed_levels and entrance is not first_entrance
     ]
 
     if len(remaining_entrances) != len(available_stages):
@@ -152,6 +159,7 @@ def build_randomiser_assignments(
         )
 
     return assignments
+
 
 def generate_valid_randomiser_assignments(
     entrances: list[Level],
@@ -203,10 +211,5 @@ def generate_valid_randomiser_assignments(
             return assignments, result
 
     raise RuntimeError(
-        "Could not generate a valid assignment set after "
-        f"{max_attempts} attempts."
+        "Could not generate a valid assignment set after " f"{max_attempts} attempts."
     )
-
-
-
-
