@@ -453,6 +453,24 @@ def pack_evil_action_common(
             f"{completed_process.returncode}."
         )
 
+    packed_files = (
+        EDITED_ARCHIVES_DIR / "+EvilActionCommon.ar.00",
+        EDITED_ARCHIVES_DIR / "+EvilActionCommon.arl",
+    )
+
+    for packed_file in packed_files:
+        if not packed_file.is_file():
+            raise FileNotFoundError(
+                f"Expected packed archive was not created: {packed_file}"
+            )
+
+        destination = BASE_DIR / packed_file.name
+
+        if destination.exists():
+            destination.unlink()
+
+        shutil.move(str(packed_file), str(destination))
+
     if print_output:
         print("+EvilActionCommon packed successfully.")
 
