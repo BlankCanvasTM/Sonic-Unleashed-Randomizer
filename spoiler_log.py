@@ -8,6 +8,7 @@ from medal_validator import (
 
 from data import Stage
 
+
 def get_stage_category(stage_type: Stage) -> str:
 
     if stage_type in {
@@ -40,6 +41,9 @@ def get_stage_category(stage_type: Stage) -> str:
     }:
         return "TUTORIAL"
 
+    if stage_type == Stage.DARK_GAIA_RUN:
+        return "DARK GAIA"
+
     return "UNKNOWN"
 
 
@@ -55,18 +59,13 @@ def create_spoiler_log_lines(
 
     lines.append("SONIC UNLEASHED RANDOMISER - SPOILER LOG")
     lines.append("=" * 70)
-    lines.append(
-        f"Generated: "
-        f"{datetime.now().strftime('%d %B %Y at %H:%M:%S')}"
-    )
+    lines.append(f"Generated: " f"{datetime.now().strftime('%d %B %Y at %H:%M:%S')}")
     lines.append(f"Seed Code: {seed_code}")
     lines.append("")
 
     lines.append("RANDOMISATION SETTINGS")
     lines.append("-" * 70)
-    lines.append(
-    f"DLC stages included: {'Yes' if include_dlc else 'No'}"
-    )
+    lines.append(f"DLC stages included: {'Yes' if include_dlc else 'No'}")
     lines.append("Boss and regular stage swaps: Yes")
     lines.append("All shoe upgrades available from start: Yes")
     lines.append("Medal progression validation: Yes")
@@ -76,12 +75,8 @@ def create_spoiler_log_lines(
 
     lines.append("HOW TO READ THIS LOG")
     lines.append("-" * 70)
-    lines.append(
-        "The entrance on the left is the location selected on the world map."
-    )
-    lines.append(
-        "The stage on the right is what will actually be played there."
-    )
+    lines.append("The entrance on the left is the location selected on the world map.")
+    lines.append("The stage on the right is what will actually be played there.")
     lines.append("")
 
     lines.append("STAGE ASSIGNMENTS")
@@ -92,13 +87,10 @@ def create_spoiler_log_lines(
         lines.append("-" * 70)
 
         for assignment in assignments:
-            if (
-                assignment.entrance in fixed_levels
-                and assignment.entrance.type in {
-                    Stage.DAY_DLC,
-                    Stage.NIGHT_DLC,
-                }
-            ):
+            if assignment.entrance in fixed_levels and assignment.entrance.type in {
+                Stage.DAY_DLC,
+                Stage.NIGHT_DLC,
+            }:
                 lines.append(
                     f"[DLC     ] "
                     f"{assignment.entrance.name:<40} "
@@ -108,21 +100,16 @@ def create_spoiler_log_lines(
                 )
 
         lines.append("")
-        
-            
 
     lines.append("")
     lines.append("FIXED BOSSES")
     lines.append("-" * 70)
 
     for assignment in assignments:
-        if (
-            assignment.entrance in fixed_levels
-            and assignment.entrance.type in {
-                Stage.DAY_BOSS,
-                Stage.NIGHT_BOSS,
-            }
-        ):
+        if assignment.entrance in fixed_levels and assignment.entrance.type in {
+            Stage.DAY_BOSS,
+            Stage.NIGHT_BOSS,
+        }:
             lines.append(
                 f"[BOSS    ] "
                 f"{assignment.entrance.name:<40} "
@@ -140,13 +127,9 @@ def create_spoiler_log_lines(
         if assignment.entrance in fixed_levels:
             continue
 
-        entrance_category = get_stage_category(
-            assignment.entrance.type
-        )
+        entrance_category = get_stage_category(assignment.entrance.type)
 
-        stage_category = get_stage_category(
-            assignment.stage.type
-        )
+        stage_category = get_stage_category(assignment.stage.type)
 
         lines.append(
             f"[{entrance_category:<8}] "
@@ -155,7 +138,6 @@ def create_spoiler_log_lines(
             f"[{stage_category:<8}] "
             f"{assignment.stage.name}"
         )
-
 
     """lines.append("")
     lines.append("DLC ENTRANCES TO TEST")
@@ -180,8 +162,7 @@ def create_spoiler_log_lines(
                     f"[{stage_category:<8}] "
                     f"{assignment.stage.name}"
                 )"""
-    
-    
+
     return lines
 
 
@@ -205,11 +186,11 @@ def write_spoiler_log(
     )
 
     lines = create_spoiler_log_lines(
-    seed_code=seed_code,
-    assignments=assignments,
-    validation_result=validation_result,
-    include_dlc=include_dlc,
-    fixed_levels=fixed_levels,
+        seed_code=seed_code,
+        assignments=assignments,
+        validation_result=validation_result,
+        include_dlc=include_dlc,
+        fixed_levels=fixed_levels,
     )
 
     output_path.write_text(
