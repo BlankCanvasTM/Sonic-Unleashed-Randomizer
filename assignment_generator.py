@@ -22,12 +22,38 @@ FORBIDDEN_STAGE_ENTRANCE_PAIRS = {
 DARK_GAIA_EXCLUDED_STAGE_TYPES = {
     Stage.DAY_BOSS,
     Stage.NIGHT_BOSS,
+    Stage.DAY_DLC,
+    Stage.NIGHT_DLC,
 }
 
 DARK_GAIA_EXCLUDED_STAGE_NAMES = {
+    # Special stages
     "Tornado Defense Act 1",
     "Tornado Defense Act 2",
-    "Rooftop Run Act 3",
+    "Rooftop Run Day Act 3",  # Chao stage
+    "Eggmanland",
+    # Confirmed incompatible Dark Gaia destinations
+    "Arid Sands Night Act 1",
+    "Cool Edge Day Act 2",
+    "Dragon Road Night Act 2",
+    "Skyscraper Scamper Day Act 2",
+    # Currently broken day DLC stages
+    "Rooftop Run Day Act 4",
+    "Rooftop Run Day Act 5",
+    "Cool Edge Day Act 3",
+    "Cool Edge Day Act 4",
+    "Arid Sands Day Act 3",
+    "Windmill Isle Day Act 2-2",
+    "Rooftop Run Day Act 1-2",
+    "Cool Edge Day Act 1-2",
+    "Cool Edge Day Act 2-2",
+    # Broken night DLC stages
+    "Cool Edge Night Act 2",
+    "Cool Edge Night Act 3",
+    "Skyscraper Scamper Night Act 2",
+    "Windmill Isle Night Act 1-3",
+    "Rooftop Run Night Act 1-2",
+    "Skyscraper Scamper Night Act 3",
 }
 
 
@@ -147,10 +173,55 @@ def build_randomiser_assignments(
 
     rng.shuffle(available_stages)
 
+    dark_gaia_entrance_indices = [
+        index
+        for index, entrance in enumerate(remaining_entrances)
+        if entrance.type == Stage.DARK_GAIA_RUN
+    ]
+
+    dark_gaia_stage_pool = set(get_dark_gaia_stage_pool(available_stages))
+
+    for dark_gaia_entrance_index in dark_gaia_entrance_indices:
+        assigned_dark_gaia_stage = available_stages[dark_gaia_entrance_index]
+
+        assigned_stage_is_valid = assigned_dark_gaia_stage in dark_gaia_stage_pool and (
+            assigned_dark_gaia_stage.type != Stage.DARK_GAIA_RUN
+            or assigned_dark_gaia_stage is remaining_entrances[dark_gaia_entrance_index]
+        )
+
+        if assigned_stage_is_valid:
+            continue
+
+        protected_indices = set(dark_gaia_entrance_indices)
+
+        valid_swap_indices = [
+            index
+            for index, stage in enumerate(available_stages)
+            if (
+                index not in protected_indices
+                and stage in dark_gaia_stage_pool
+                and stage.type != Stage.DARK_GAIA_RUN
+            )
+        ]
+
+        if not valid_swap_indices:
+            raise RuntimeError("No valid stage is available for a Dark Gaia run.")
+
+        swap_index = rng.choice(valid_swap_indices)
+
+        (
+            available_stages[dark_gaia_entrance_index],
+            available_stages[swap_index],
+        ) = (
+            available_stages[swap_index],
+            available_stages[dark_gaia_entrance_index],
+        )
+
     for entrance, stage in zip(
         remaining_entrances,
         available_stages,
     ):
+
         assignments.append(
             StageAssignment(
                 entrance=entrance,

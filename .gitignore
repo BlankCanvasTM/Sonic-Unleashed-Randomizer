@@ -34,6 +34,8 @@ build/
 /Stages To Randomise Enemies/
 /Clean Werehog Combos/
 /+EvilActionCommon/
+/Dark Gaia Randomiser
+/Enemy Randomiser/
 
 /randomiser_log.txt
 /werehog_skill_spoiler_log.txt
@@ -41,3 +43,4 @@ build/
 /randomiser_metadata.json
 /sonic.ico
 /Sonic Unleashed Randomiser.spec
+/find_seed.py

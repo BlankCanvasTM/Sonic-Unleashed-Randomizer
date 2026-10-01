@@ -9,7 +9,6 @@ from pathlib import Path
 from packer import get_hedgearcpack_path, pack_application
 from seed_system import generate_seed_code, normalise_seed, seed_to_integer
 
-
 SKILL_SEED_NAMESPACE = "WEREHOG_SKILLS"
 
 SKILL_NAMES = {
@@ -63,9 +62,10 @@ def get_base_directory() -> Path:
 
 
 BASE_DIR = get_base_directory()
+EDITED_ARCHIVES_DIR = BASE_DIR / "Edited Archives"
 CLEAN_COMBO_DIR = BASE_DIR / "Clean Werehog Combos"
 APPLICATION_DIR = BASE_DIR / "+#Application"
-EVIL_ACTION_COMMON_DIR = BASE_DIR / "+EvilActionCommon"
+EVIL_ACTION_COMMON_DIR = EDITED_ARCHIVES_DIR / "+EvilActionCommon"
 
 CLEAN_EVIL_ATTACK_ACTION = CLEAN_COMBO_DIR / "EvilAttackAction1.xml"
 CLEAN_SKILL_PARAMETER = CLEAN_COMBO_DIR / "SkillParameter.xml"
@@ -88,21 +88,15 @@ def validate_skill_files() -> None:
     if missing:
         missing_text = "\n".join(f"  {path}" for path in missing)
         raise FileNotFoundError(
-            "The following clean Werehog combo files are missing:\n"
-            f"{missing_text}"
+            "The following clean Werehog combo files are missing:\n" f"{missing_text}"
         )
 
     required_directories = (APPLICATION_DIR, EVIL_ACTION_COMMON_DIR)
-    missing_directories = [
-        path for path in required_directories if not path.is_dir()
-    ]
+    missing_directories = [path for path in required_directories if not path.is_dir()]
     if missing_directories:
-        missing_text = "\n".join(
-            f"  {path}" for path in missing_directories
-        )
+        missing_text = "\n".join(f"  {path}" for path in missing_directories)
         raise FileNotFoundError(
-            "The following working archive folders are missing:\n"
-            f"{missing_text}"
+            "The following working archive folders are missing:\n" f"{missing_text}"
         )
 
 
@@ -140,8 +134,7 @@ def generate_skill_progression(rng: random.Random) -> dict[int, int]:
         remaining.remove(chosen)
 
     progression = {
-        destination: source
-        for destination, source in zip(range(2, 32), order)
+        destination: source for destination, source in zip(range(2, 32), order)
     }
     validate_dependency_order(progression)
     return progression
@@ -177,9 +170,7 @@ def _randomise_evil_attack_action(
     def edit_action(match: re.Match[str]) -> str:
         nonlocal feral_cutoff_changes
         block = match.group(0)
-        min_match = re.search(
-            r"<ValidLevel_Min>(\d+)</ValidLevel_Min>", block
-        )
+        min_match = re.search(r"<ValidLevel_Min>(\d+)</ValidLevel_Min>", block)
         if min_match is None:
             return block
 
@@ -187,9 +178,7 @@ def _randomise_evil_attack_action(
         action_name_match = re.search(
             r"<ActionName>(.*?)</ActionName>", block, re.DOTALL
         )
-        action_name = (
-            action_name_match.group(1).strip() if action_name_match else ""
-        )
+        action_name = action_name_match.group(1).strip() if action_name_match else ""
 
         if 2 <= vanilla_min <= 31:
             destination_level = source_to_destination[vanilla_min]
@@ -203,9 +192,7 @@ def _randomise_evil_attack_action(
 
         # Feral Were-Hammer replaces the beginner Were-Hammer route.
         if vanilla_min == 1 and action_name in {"NSC", "NSD_2"}:
-            max_match = re.search(
-                r"<ValidLevel_Max>(\d+)</ValidLevel_Max>", block
-            )
+            max_match = re.search(r"<ValidLevel_Max>(\d+)</ValidLevel_Max>", block)
             if max_match is not None and int(max_match.group(1)) == 15:
                 block = re.sub(
                     r"<ValidLevel_Max>15</ValidLevel_Max>",
@@ -219,9 +206,7 @@ def _randomise_evil_attack_action(
 
     new_text = action_pattern.sub(edit_action, text)
 
-    missing_levels = [
-        level for level, count in changed_by_source.items() if count == 0
-    ]
+    missing_levels = [level for level, count in changed_by_source.items() if count == 0]
     if missing_levels:
         raise ValueError(
             "No gameplay actions were found for vanilla skill level(s): "
@@ -304,7 +289,7 @@ def _scan_fco_string_records(data: bytes) -> list[tuple[int, str, int]]:
     records: list[tuple[int, str, int]] = []
 
     for offset in range(0, len(data) - 8):
-        length = int.from_bytes(data[offset:offset + 4], "big")
+        length = int.from_bytes(data[offset : offset + 4], "big")
         if not 1 <= length <= 64:
             continue
 
@@ -413,16 +398,18 @@ def _write_skill_spoiler_log(
             f"[vanilla Lv{source_skill}; {commands[source_skill]}]"
         )
 
-    lines.extend([
-        "",
-        "DEPENDENCY RULES",
-        "-" * 70,
-        "Donkey Kick Combo < Knuckle Sandwich Combo < Unleashed Knuckle Sandwich",
-        "Egg Scrambler < Ultimate Wild Combo < Unleashed Wild Combo",
-        "Feral Were-Hammer < Werewheel Rush",
-        "Feral Were-Hammer < Vertical Were-Hammer",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "DEPENDENCY RULES",
+            "-" * 70,
+            "Donkey Kick Combo < Knuckle Sandwich Combo < Unleashed Knuckle Sandwich",
+            "Egg Scrambler < Ultimate Wild Combo < Unleashed Wild Combo",
+            "Feral Were-Hammer < Werewheel Rush",
+            "Feral Were-Hammer < Vertical Were-Hammer",
+            "",
+        ]
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines), encoding="utf-8")
@@ -626,11 +613,7 @@ def main() -> None:
         )
         return
 
-    seed_code = (
-        generate_seed_code()
-        if args.seed is None
-        else normalise_seed(args.seed)
-    )
+    seed_code = generate_seed_code() if args.seed is None else normalise_seed(args.seed)
     randomise_werehog_skills(
         seed_code=seed_code,
         log_path=args.log,

@@ -958,3 +958,33 @@ class LevelState:
             Shoe.NONE,
             [],
         )
+        self.DARK_GAIA_RUN_1 = DARK_GAIA_RUN_1 = Level(
+            self.levels,
+            "Dark Gaia Run 1",
+            Stage.DARK_GAIA_RUN,
+            0,
+            None,
+            "DarkGaiaRun1",
+            Shoe.NONE,
+            [],
+        )
+        self.DARK_GAIA_RUN_2 = DARK_GAIA_RUN_2 = Level(
+            self.levels,
+            "Dark Gaia Run 2",
+            Stage.DARK_GAIA_RUN,
+            0,
+            None,
+            "DarkGaiaRun2",
+            Shoe.NONE,
+            [],
+        )
+        self.DARK_GAIA_RUN_3 = DARK_GAIA_RUN_3 = Level(
+            self.levels,
+            "Dark Gaia Run 3",
+            Stage.DARK_GAIA_RUN,
+            0,
+            None,
+            "DarkGaiaRun3",
+            Shoe.NONE,
+            [],
+        )

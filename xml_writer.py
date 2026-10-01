@@ -4,6 +4,12 @@ import shutil
 
 from medal_validator import StageAssignment
 
+DARK_GAIA_DESTINATION_FILES = {
+    "Dark Gaia Run 1": "SR_EnterRun1Destination.seq.xml",
+    "Dark Gaia Run 2": "SR_EnterRun2Destination.seq.xml",
+    "Dark Gaia Run 3": "SR_EnterRun3Destination.seq.xml",
+}
+
 
 @dataclass
 class XMLWriteResult:
@@ -11,6 +17,13 @@ class XMLWriteResult:
     stage_name: str
     source_path: Path
     destination_path: Path
+
+
+def get_assignment_source_file(assignment: StageAssignment) -> str | Path:
+    return DARK_GAIA_DESTINATION_FILES.get(
+        assignment.stage.name,
+        assignment.stage.file,
+    )
 
 
 def resolve_level_file(
@@ -29,7 +42,7 @@ def validate_assignment_files(
 
     for assignment in assignments:
         source_path = resolve_level_file(
-            assignment.stage.file,
+            get_assignment_source_file(assignment),
             source_directory,
         )
 
@@ -37,14 +50,10 @@ def validate_assignment_files(
             missing_files.append(source_path)
 
     if missing_files:
-        missing_text = "\n".join(
-            f"  {path}"
-            for path in missing_files
-        )
+        missing_text = "\n".join(f"  {path}" for path in missing_files)
 
         raise FileNotFoundError(
-            "The following clean source XML files are missing:\n"
-            f"{missing_text}"
+            "The following clean source XML files are missing:\n" f"{missing_text}"
         )
 
 
@@ -60,14 +69,12 @@ def write_xml_assignments(
 
     if not source_directory.is_dir():
         raise FileNotFoundError(
-            f"Source XML directory does not exist: "
-            f"{source_directory}"
+            f"Source XML directory does not exist: " f"{source_directory}"
         )
 
     if not output_directory.is_dir():
         raise FileNotFoundError(
-            f"Output XML directory does not exist: "
-            f"{output_directory}"
+            f"Output XML directory does not exist: " f"{output_directory}"
         )
 
     validate_assignment_files(
@@ -80,7 +87,7 @@ def write_xml_assignments(
 
     for assignment in assignments:
         source_path = resolve_level_file(
-            assignment.stage.file,
+            get_assignment_source_file(assignment),
             source_directory,
         )
 
@@ -91,7 +98,7 @@ def write_xml_assignments(
 
     for assignment in assignments:
         source_path = resolve_level_file(
-            assignment.stage.file,
+            get_assignment_source_file(assignment),
             source_directory,
         )
 
@@ -102,14 +109,10 @@ def write_xml_assignments(
 
         if not destination_path.exists():
             raise FileNotFoundError(
-                f"Destination entrance XML is missing: "
-                f"{destination_path}"
+                f"Destination entrance XML is missing: " f"{destination_path}"
             )
 
-        destination_path.write_bytes(
-            source_contents[source_path]
-        )
-
+        destination_path.write_bytes(source_contents[source_path])
 
         result = XMLWriteResult(
             entrance_name=assignment.entrance.name,
@@ -121,13 +124,7 @@ def write_xml_assignments(
         results.append(result)
 
         if print_progress:
-            print(
-                f"{assignment.entrance.name:<40} "
-                f"-> {assignment.stage.name}"
-            )
-            print(
-                f"  {source_path.name} "
-                f"-> {destination_path.name}"
-            )
+            print(f"{assignment.entrance.name:<40} " f"-> {assignment.stage.name}")
+            print(f"  {source_path.name} " f"-> {destination_path.name}")
 
     return results

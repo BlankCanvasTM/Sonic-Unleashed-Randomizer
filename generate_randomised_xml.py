@@ -9,7 +9,17 @@ from data import LevelState
 from xml_writer import write_xml_assignments
 
 
+from dark_gaia_randomiser import (
+    prepare_dark_gaia_run_1,
+    prepare_dark_gaia_run_2,
+    prepare_dark_gaia_run_3,
+    restore_goal_rings_from_clean_set,
+)
+
+
 from enemy_randomiser import (
+    find_stage_pairs,
+    pack_archive,
     randomise_all_night_stages,
     reset_all_night_stages,
 )
@@ -33,7 +43,6 @@ from werehog_skill_randomiser import (
 )
 
 
-
 def get_base_directory() -> Path:
 
     if getattr(sys, "frozen", False):
@@ -41,15 +50,14 @@ def get_base_directory() -> Path:
 
     return Path(__file__).resolve().parent
 
+
 def reset_stages_to_vanilla(
     source_directory: Path,
     application_directory: Path,
 ) -> int:
 
     if not source_directory.is_dir():
-        raise FileNotFoundError(
-            f"Stages folder was not found: {source_directory}"
-        )
+        raise FileNotFoundError(f"Stages folder was not found: {source_directory}")
 
     if not application_directory.is_dir():
         raise FileNotFoundError(
@@ -69,6 +77,69 @@ def reset_stages_to_vanilla(
         restored_count += 1
 
     return restored_count
+
+
+def reset_dark_gaia_randomiser(
+    base_directory: Path,
+) -> None:
+
+    edited_archives_directory = base_directory / "Edited Archives"
+
+    # Remove the generated Dark Gaia working archives.
+    dark_gaia_working_archives = (
+        edited_archives_directory / "+#BossDarkGaia1_1Run",
+        edited_archives_directory / "+#BossDarkGaia1_2Run",
+        edited_archives_directory / "+#BossDarkGaia1_3Run",
+    )
+
+    for dark_gaia_working_archive in dark_gaia_working_archives:
+        if dark_gaia_working_archive.is_dir():
+            shutil.rmtree(dark_gaia_working_archive)
+
+            print(f"{dark_gaia_working_archive.name} " "working archive removed.")
+
+    # Restore any completion SETs that Dark Gaia may have modified.
+    from dark_gaia_data import DARK_GAIA_STAGE_DATA
+
+    restored_sets = 0
+
+    for stage_data in DARK_GAIA_STAGE_DATA.values():
+        clean_archive_name = stage_data.archive.removeprefix("+#")
+
+        if stage_data.archive.startswith("+#ActD_"):
+            clean_stage_folder = (
+                base_directory / "Base Areas" / "Day Stages" / clean_archive_name
+            )
+        else:
+            clean_stage_folder = base_directory / "Base Areas" / clean_archive_name
+
+        working_stage_folder = (
+            base_directory / "Stages To Randomise Enemies" / stage_data.archive
+        )
+
+        for completion_set in stage_data.completion_sets:
+            working_set_file = working_stage_folder / completion_set
+
+            if not working_set_file.is_file():
+                continue
+
+            clean_set_file = clean_stage_folder / completion_set
+
+            if not clean_set_file.is_file():
+                raise FileNotFoundError(
+                    "Clean Dark Gaia completion SET file "
+                    f"does not exist: {clean_set_file}"
+                )
+
+            restored_goal_rings = restore_goal_rings_from_clean_set(
+                working_set_file=working_set_file,
+                clean_set_file=clean_set_file,
+            )
+
+            if restored_goal_rings:
+                restored_sets += 1
+
+    print("Dark Gaia completion SETs restored: " f"{restored_sets}")
 
 
 def ask_yes_no(prompt: str) -> bool:
@@ -99,9 +170,7 @@ def main() -> None:
     reset_enemies = False
     reset_skills = False
 
-    reset_files = ask_yes_no(
-    "\nReset files to vanilla? [Y/N]: "
-    )
+    reset_files = ask_yes_no("\nReset files to vanilla? [Y/N]: ")
 
     if reset_files:
         while True:
@@ -113,9 +182,7 @@ def main() -> None:
             print("4. Everything")
             print()
 
-            reset_choice = input(
-                "\nSelect an option [1/2/3/4]: "
-            ).strip()
+            reset_choice = input("\nSelect an option [1/2/3/4]: ").strip()
 
             if reset_choice in {"1", "2", "3", "4"}:
                 break
@@ -137,9 +204,10 @@ def main() -> None:
                 application_directory=application_directory,
             )
 
-            print(
-                f"Stage sequence files restored: "
-                f"{restored_stage_files}"
+            print(f"Stage sequence files restored: " f"{restored_stage_files}")
+
+            reset_dark_gaia_randomiser(
+                base_directory=base_directory,
             )
 
             application_needs_pack = True
@@ -163,8 +231,7 @@ def main() -> None:
 
             if not pack_result.success:
                 raise RuntimeError(
-                    "Files were restored, but "
-                    "+#Application packing failed."
+                    "Files were restored, but " "+#Application packing failed."
                 )
 
         if reset_skills:
@@ -179,40 +246,29 @@ def main() -> None:
                 print_progress=True,
             )
 
-    randomise_stages = ask_yes_no(
-        "\nRandomise stages? [Y/N]: "
-    )
-                    
+    randomise_stages = ask_yes_no("\nRandomise stages? [Y/N]: ")
+
     include_dlc = False
 
     if randomise_stages:
-        include_dlc = ask_yes_no(
-            "\nInclude DLC stages? [Y/N]: "
-        )
+        include_dlc = ask_yes_no("\nInclude DLC stages? [Y/N]: ")
 
-    randomise_enemies = ask_yes_no(
-        "\nRandomise Night stage enemies? [Y/N]: "
-    )
+    randomise_enemies = ask_yes_no("\nRandomise Night stage enemies? [Y/N]: ")
 
-    randomise_skills = ask_yes_no(
-        "\nRandomise Werehog combo unlocks? [Y/N]: "
-    )
+    randomise_skills = ask_yes_no("\nRandomise Werehog combo unlocks? [Y/N]: ")
 
     enemy_seed = None
 
     if randomise_enemies:
         enemy_seed_input = input(
-            "\nEnter an enemy seed "
-            "(leave blank to generate one): "
+            "\nEnter an enemy seed " "(leave blank to generate one): "
         ).strip()
 
         if enemy_seed_input:
             try:
                 enemy_seed = int(enemy_seed_input)
             except ValueError as exc:
-                raise ValueError(
-                    "Enemy seed must be a whole number."
-                ) from exc
+                raise ValueError("Enemy seed must be a whole number.") from exc
         else:
             enemy_seed = secrets.randbits(64)
 
@@ -221,8 +277,7 @@ def main() -> None:
 
     if randomise_stages or randomise_skills:
         seed_input = input(
-            "\nEnter a seed code "
-            "(leave blank to generate one): "
+            "\nEnter a seed code " "(leave blank to generate one): "
         ).strip()
 
         if seed_input:
@@ -238,15 +293,10 @@ def main() -> None:
         if randomise_stages:
             print(f"DLC Included: {'Yes' if include_dlc else 'No'}")
 
-    print(
-        f"Enemy Randomisation: "
-        f"{'Yes' if randomise_enemies else 'No'}"
-    )
+    print(f"Enemy Randomisation: " f"{'Yes' if randomise_enemies else 'No'}")
 
     if randomise_enemies:
         print(f"Enemy Seed: {enemy_seed}")
-
-
 
     if randomise_stages:
 
@@ -255,88 +305,79 @@ def main() -> None:
         if include_dlc:
             participating_levels = level_state.levels
         else:
-            participating_levels = get_non_dlc_levels(
-                level_state
-            )
+            participating_levels = get_non_dlc_levels(level_state)
 
-        first_stage_pool = get_no_upgrade_levels(
-            participating_levels
-        )
+        first_stage_pool = get_no_upgrade_levels(participating_levels)
 
-        #fixed_levels = {
-        #level_state.BOSS_DARK_GUARDIAN,
-        #level_state.BOSS_DARK_GAIA_PHEONIX,
-        #level_state.BOSS_DARK_MORAY,
-    #}
+        # fixed_levels = {
+        # level_state.BOSS_DARK_GUARDIAN,
+        # level_state.BOSS_DARK_GAIA_PHEONIX,
+        # level_state.BOSS_DARK_MORAY,
+        # }
 
         fixed_levels = set()
 
         if include_dlc:
-            fixed_levels.update({
-                level_state.WID2_2,
-                level_state.WIN1_3,
-                level_state.SCD3_2,
-                level_state.RRD1_2,
-                level_state.RRD2_2,
-                level_state.RRD4,
-                level_state.RRD5,
-                level_state.RRN1_2,
-                level_state.CED1_2,
-                level_state.CED2_2,
-                level_state.CED3,
-                level_state.CED4,
-                level_state.CEN2,
-                level_state.CEN3,
-                level_state.DRD1_2,
-                level_state.DRD2_2,
-                level_state.DRN1_2,
-                level_state.ASD1_2,
-                level_state.ASD3,
-                level_state.ASN2,
-                level_state.SSD1_2,
-                level_state.SSN2,
-                level_state.JJD1_2,
-                level_state.JJN1_2,
-                level_state.SCD1_2,
-                level_state.SCD5,
-                level_state.JJN3,
-                level_state.SSN3,
-            })
+            fixed_levels.update(
+                {
+                    level_state.WID2_2,
+                    level_state.WIN1_3,
+                    level_state.SCD3_2,
+                    level_state.RRD1_2,
+                    level_state.RRD2_2,
+                    level_state.RRD4,
+                    level_state.RRD5,
+                    level_state.RRN1_2,
+                    level_state.CED1_2,
+                    level_state.CED2_2,
+                    level_state.CED3,
+                    level_state.CED4,
+                    level_state.CEN2,
+                    level_state.CEN3,
+                    level_state.DRD1_2,
+                    level_state.DRD2_2,
+                    level_state.DRN1_2,
+                    level_state.ASD1_2,
+                    level_state.ASD3,
+                    level_state.ASN2,
+                    level_state.SSD1_2,
+                    level_state.SSN2,
+                    level_state.JJD1_2,
+                    level_state.JJN1_2,
+                    level_state.SCD1_2,
+                    level_state.SCD5,
+                    level_state.JJN3,
+                    level_state.SSN3,
+                }
+            )
 
         assignments, validation_result = generate_valid_randomiser_assignments(
-        entrances=participating_levels,
-        randomisable_stages=participating_levels,
-        first_entrance=level_state.WID1,
-        first_stage_pool=first_stage_pool,
-        seed=numeric_seed,
-        fixed_levels=fixed_levels,
-        max_attempts=10_000,
-        print_attempts=True,
-    )
+            entrances=participating_levels,
+            randomisable_stages=participating_levels,
+            first_entrance=level_state.WID1,
+            first_stage_pool=first_stage_pool,
+            seed=numeric_seed,
+            fixed_levels=fixed_levels,
+            max_attempts=10_000,
+            print_attempts=True,
+        )
 
         print()
         print("VALID RANDOMISATION FOUND")
         print()
 
         for assignment in assignments:
-            print(
-                f"{assignment.entrance.name:<40} "
-                f"-> {assignment.stage.name}"
-            )
-
+            print(f"{assignment.entrance.name:<40} " f"-> {assignment.stage.name}")
 
         if not validation_result.valid:
-            raise RuntimeError(
-                "The generated assignments failed final validation."
-            )
-
+            raise RuntimeError("The generated assignments failed final validation.")
 
         write_xml_assignments(
-        assignments=assignments,
-        source_directory=source_directory,
-        output_directory=application_directory,
-        print_progress=True,
-    )
+            assignments=assignments,
+            source_directory=source_directory,
+            output_directory=application_directory,
+            print_progress=True,
+        )
 
         print()
         print("RANDOMISED XML FILES READY")
@@ -353,7 +394,6 @@ def main() -> None:
         print()
         print("+#Application is ready to pack.")
 
-
         written_log_path = write_spoiler_log(
             seed_code=seed_code,
             assignments=assignments,
@@ -364,7 +404,6 @@ def main() -> None:
         )
 
         print(f"Spoiler log written to: {written_log_path}")
-
 
     skill_result = None
 
@@ -398,7 +437,6 @@ def main() -> None:
             print_output=True,
         )
 
-
     enemy_result = None
 
     if randomise_enemies:
@@ -408,9 +446,160 @@ def main() -> None:
         enemy_result = randomise_all_night_stages(
             seed=enemy_seed,
             log_path=enemy_spoiler_log_path,
-            pack_archives=True,
+            pack_archives=False,
             print_progress=True,
         )
+
+    dark_gaia_run_1_archive = None
+    dark_gaia_run_1_destination_archive = None
+
+    dark_gaia_run_2_archive = None
+    dark_gaia_run_2_destination_archive = None
+
+    dark_gaia_run_3_archive = None
+    dark_gaia_run_3_destination_archive = None
+
+    if randomise_stages:
+        print()
+        print("PREPARING DARK GAIA RUN 1")
+
+        (
+            dark_gaia_run_1_archive,
+            dark_gaia_run_1_destination_archive,
+        ) = prepare_dark_gaia_run_1(
+            assignments=assignments,
+            base_directory=base_directory,
+        )
+
+        print()
+        print("PREPARING DARK GAIA RUN 2")
+
+        (
+            dark_gaia_run_2_archive,
+            dark_gaia_run_2_destination_archive,
+        ) = prepare_dark_gaia_run_2(
+            assignments=assignments,
+            base_directory=base_directory,
+        )
+
+        print()
+        print("PREPARING DARK GAIA RUN 3")
+
+        (
+            dark_gaia_run_3_archive,
+            dark_gaia_run_3_destination_archive,
+        ) = prepare_dark_gaia_run_3(
+            assignments=assignments,
+            base_directory=base_directory,
+        )
+
+    night_stage_folders = set()
+
+    if randomise_enemies:
+        print()
+        print("PACKING RANDOMISED NIGHT STAGE ARCHIVES")
+
+        night_stage_folders = {
+            stage_folder.resolve() for stage_folder, _ in find_stage_pairs()
+        }
+
+        for stage_folder in sorted(
+            night_stage_folders,
+            key=lambda path: path.name,
+        ):
+            pack_result = pack_archive(
+                hedgearcpack_path,
+                stage_folder,
+                print_output=True,
+            )
+
+            if not pack_result.success:
+                raise RuntimeError(
+                    "Failed to pack randomised enemy archive: " f"{stage_folder.name}"
+                )
+
+    if randomise_stages:
+        print()
+        print("PACKING DARK GAIA ARCHIVES")
+
+        dark_gaia_archives = (
+            (
+                "Dark Gaia Run 1",
+                dark_gaia_run_1_archive,
+                dark_gaia_run_1_destination_archive,
+            ),
+            (
+                "Dark Gaia Run 2",
+                dark_gaia_run_2_archive,
+                dark_gaia_run_2_destination_archive,
+            ),
+            (
+                "Dark Gaia Run 3",
+                dark_gaia_run_3_archive,
+                dark_gaia_run_3_destination_archive,
+            ),
+        )
+
+        packed_dark_gaia_archives = set()
+
+        for (
+            run_name,
+            dark_gaia_archive,
+            destination_archive,
+        ) in dark_gaia_archives:
+
+            dark_gaia_is_destination = (
+                destination_archive.resolve() == dark_gaia_archive.resolve()
+            )
+
+            destination_is_already_packed = (
+                dark_gaia_is_destination
+                or (
+                    randomise_enemies
+                    and destination_archive.resolve() in night_stage_folders
+                )
+                or destination_archive.resolve() in packed_dark_gaia_archives
+            )
+
+            print()
+            print(f"PACK TRACE: {run_name}")
+            print(f"  Destination: {destination_archive}")
+            print(f"  Dark Gaia archive: {dark_gaia_archive}")
+            print(f"  Is self destination: {dark_gaia_is_destination}")
+            print(
+                "  In night stage folders: "
+                f"{destination_archive.resolve() in night_stage_folders}"
+            )
+            print(
+                "  Already packed by Dark Gaia: "
+                f"{destination_archive.resolve() in packed_dark_gaia_archives}"
+            )
+            print(f"  Will pack destination: {not destination_is_already_packed}")
+
+            if not destination_is_already_packed:
+                destination_pack_result = pack_archive(
+                    hedgearcpack_path,
+                    destination_archive,
+                    print_output=True,
+                )
+
+                if not destination_pack_result.success:
+                    raise RuntimeError(
+                        f"Failed to pack the {run_name} " "destination archive."
+                    )
+
+                packed_dark_gaia_archives.add(destination_archive.resolve())
+
+            dark_gaia_pack_result = pack_archive(
+                hedgearcpack_path,
+                dark_gaia_archive,
+                print_output=True,
+            )
+
+            if not dark_gaia_pack_result.success:
+                raise RuntimeError(f"Failed to pack {dark_gaia_archive.name}.")
+
+            packed_dark_gaia_archives.add(dark_gaia_archive.resolve())
 
     print()
     print("RANDOMISATION COMPLETE")
@@ -454,18 +643,14 @@ def main() -> None:
         print()
         print("Enemy Randomisation: No")
 
-
     if randomise_stages or randomise_skills:
         print("Application archive packed successfully.")
         print()
-        print("Keep the seed code to reproduce this randomisation.")                    
-            
+        print("Keep the seed code to reproduce this randomisation.")
 
     if randomise_enemies:
-        print(
-            "Keep the enemy seed to reproduce the same "
-            "enemy randomisation."
-        )
+        print("Keep the enemy seed to reproduce the same " "enemy randomisation.")
+
 
 if __name__ == "__main__":
     main()
