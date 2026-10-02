@@ -51,6 +51,23 @@ def get_base_directory() -> Path:
     return Path(__file__).resolve().parent
 
 
+def clear_enemy_randomiser_output(
+    base_directory: Path,
+) -> None:
+
+    output_directory = base_directory / "Enemy Randomiser"
+
+    if output_directory.is_dir():
+        shutil.rmtree(output_directory)
+
+    output_directory.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    print("Enemy Randomiser output cleared.")
+
+
 def reset_stages_to_vanilla(
     source_directory: Path,
     application_directory: Path,
@@ -437,7 +454,13 @@ def main() -> None:
             print_output=True,
         )
 
-    enemy_result = None
+    if randomise_stages or randomise_enemies:
+        print()
+        print("CLEARING OLD GENERATED ARCHIVES")
+
+        clear_enemy_randomiser_output(
+            base_directory=base_directory,
+        )
 
     if randomise_enemies:
         print()
